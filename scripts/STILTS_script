@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-# Author: 	Fabio Luchsinger
-# E-Mail: 	fabio.luchsinger@idia.ac.za
-# Date:		28.8.2023
-# Institution:	University of the Western Cape
+# Author: 	Yingkang Zhang
+# E-Mail: 	ykzhang@shao.ac.cn
+# Date: 	2025-2-14
+# Institution:	SHAO - Shanghai Astronomical Observatory, CAS, China
+#		        CSIRO, Australia
+
+# This template is from Fabio Luchsinger and mofiied by Yingkang Zhang. 
+# I learn this from the CSIRO's co-learnium program during the work in CSIRO Space & Astronomy.
+
 
 # Script Description:
 # This script shall crossmatch 
@@ -13,7 +18,7 @@
 # to finally produce a new catalogue
 # in the field of XMM-LSS
 
-##############################
+###########################################
 ##### 1. Init ##### 
 clear
 
