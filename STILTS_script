@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+
+# Author: 	Fabio Luchsinger
+# E-Mail: 	fabio.luchsinger@idia.ac.za
+# Date:		28.8.2023
+# Institution:	University of the Western Cape
+
+# Script Description:
+# This script shall crossmatch 
+# LOFAR HBA Observations with
+# MeerKAT L-Band
+# JVLA 1-2 GHz
+# to finally produce a new catalogue
+# in the field of XMM-LSS
+
+##############################
+##### 1. Init ##### 
+clear
+
+# Get Directory where script is located
+BASEDIR=$(dirname "$0")
+
+# Change Shell execution to the place where the script lies
+cd "$BASEDIR"
+
+# Jointype
+jointype=1and2
+
+# Output Path
+outPath="${BASEDIR}/finalCatalogue.fits"
+
+# Path to stilts program
+stilts_dir="${BASEDIR}/stilts.jar"
+
+exit
+###############################
+##### 2. Define input paths ##### 
+
+PathMIGHTEE="${BASEDIR}/MIGHTEE_Continuum_Early_Science_XMMLSS_Level1.fits"
+
+PathLOFAR="${BASEDIR}/lofar-xmmlss.fits"
+
+PathVLA="${BASEDIR}/VLA_XMM-VIDEO_catalogue_R2.fits"
+
+############################################################
+##### 3. Columns to keep ##### 
+
+MIGHTEEColumns='keepcols "NAME RA E_RA DEC E_DEC S_INT E_S_INT S_PEAK E_S_PEAK RESOLVED ISL_RMS "'
+
+LOFARColumns='keepcols "IAUsourceID RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 FTotal e_FTotal FPeak e_FPeak rmscentral AGN1 AGN2"'
+
+VLAColumns='keepcols "ID RA DEC E_RA E_DEC S_INT E_S_INT S_PEAK E_S_PEAK RMS_PEAK RMS_MEAN"'
+
+# MIGHTEE columns to keep
+java -jar $stilts_dir tpipe ifmt=fits "$PathMIGHTEE" cmd="$MIGHTEEColumns" out=tmp_MIGTHEE.fits
+
+# LOFAR columns to keep
+java -jar $stilts_dir tpipe ifmt=fits "$PathLOFAR" cmd="$LOFARColumns" out=tmp_LOFAR.fits
+
+# VLA columns to keep
+java -jar $stilts_dir tpipe ifmt=fits "$PathVLA" cmd="$VLAColumns" out=tmp_VLA.fits
+
+############################################################
+# 4. Changed LOFAR and VLA units
+
+java -jar $stilts_dir tpipe ifmt=fits in=tmp_LOFAR.fits cmd='replacecol FTotal "FTotal*0.001"' cmd='replacecol e_FTotal "e_FTotal*0.001"' cmd='replacecol FPeak "FPeak*0.001"' cmd='replacecol e_FPeak "e_FPeak*0.001"' out=tmp_LOFAR.fits
+
+java -jar $stilts_dir tpipe ifmt=fits in=tmp_VLA.fits cmd='replacecol S_INT "S_INT*0.001"' cmd='replacecol E_S_INT "E_S_INT*0.001"' cmd='replacecol S_PEAK "S_PEAK*0.001"' cmd='replacecol E_S_PEAK "E_S_PEAK*0.001"' out=tmp_VLA.fits
+
+java -jar $stilts_dir tpipe ifmt=fits in=tmp_VLA.fits cmd='replacecol RMS_PEAK "RMS_PEAK*0.001"' cmd='replacecol RMS_MEAN "RMS_MEAN*0.001"' out=tmp_VLA.fits
+
+
+############################################################
+# 5. Sort LOFAR on the FPeak data - highest value first
+
+# TODO: Add your line of code here
+
+############################################################
+
+# 6. Check columns and execute logical operations on it. The output will be in a new column.
+
+# Example AGN criterion 1 and AGN criterion 2 which were created with different methods
+java -jar $stilts_dir tpipe ifmt=fits "${BASEDIR}/tmp_LOFAR.fits" cmd='addcol Criterion_combined "(AGN1==1)||(AGN2==1)"' out=tmp_LOFAR.fits
+
+# Add a some constant error SOME_ERR because it might be missing in your catalogue
+java -jar $stilts_dir tpipe ifmt=fits "${BASEDIR}/tmp_LOFAR.fits" cmd='addcol SOME_ERR "0.52"' out=tmp_LOFAR.fits
+
+# If FTotal is smaller than 0.0012 then FTotal_0:=0.002 otherwise FTotal_0:=FTotal
+java -jar $stilts_dir tpipe ifmt=fits "${BASEDIR}/tmp_LOFAR.fits" cmd='addcol FTotal_0 "FTotal<0.0012 ? 0.002 : FTotal"' out=tmp_LOFAR.fits
+
+############################################################
+# 7. Crossmatch all three catalogues
+
+# Crossmatch LOFAR with MIGHTEE
+java -jar $stilts_dir tmatch2 "${BASEDIR}/tmp_LOFAR.fits" "${BASEDIR}/tmp_MIGTHEE.fits" values1="RAJ2000 DEJ2000" values2="RA DEC" params="5" fixcols=all suffix1=_LOFAR suffix2=_MIGHTEE out=tmp_LOFAR_MIGHTEE.fits matcher=sky join=$jointype
+echo "---> Crossmatched LOFAR with MIGHTEE"
+
+# Crossmatch with VLA
+java -jar $stilts_dir tmatch2 "${BASEDIR}/tmp_VLA.fits" "${BASEDIR}/tmp_LOFAR_MIGHTEE.fits" values1="RA DEC" values2="RA_MIGHTEE DEC_MIGHTEE"  params="5" fixcols=all suffix1=_VLA suffix2= out=tmp_LOFAR_MIGHTEE_VLA.fits matcher=sky join=$jointype
+echo "---> Crossmatched with VLA."
+
+############################################################
+# 8. Clean up
+
+# Delete Seperation Columns created by crossmatches
+java -jar $stilts_dir tpipe ifmt=fits "${BASEDIR}/tmp_LOFAR_MIGHTEE_VLA.fits" cmd='delcols "Separation"' cmd='delcols "Separation"' out=$outPath
+
+
+############################################################
+# Delete Temporary Catalogues
+
+rm  ${BASEDIR}/tmp_LOFAR_MIGHTEE.fits
+rm  ${BASEDIR}/tmp_LOFAR_MIGHTEE_VLA.fits
+rm  ${BASEDIR}/tmp_MIGTHEE.fits
+rm  ${BASEDIR}/tmp_LOFAR.fits
+rm  ${BASEDIR}/tmp_VLA.fits
+
+############################################################
+# Solution to section 5
+# java -jar $stilts_dir tpipe ifmt=fits in=tmp_LOFAR.fits cmd='sort -down FPeak' out=tmp_LOFAR.fits
