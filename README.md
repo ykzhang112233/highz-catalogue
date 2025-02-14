@@ -6,6 +6,14 @@
 # Institution:	SHAO - Shanghai Astronomical Observatory, CAS, China
 #		        CSIRO, Australia
 
+
+
+ We generate this catalogue that contains the most comprehensive cross-matching and analysis of radio quasars at redshifts > 3.
+ 
+
+
+
+
 Catalogues used (see /catalogues): 
 - xxxx catalogue [1]
 -

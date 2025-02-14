@@ -28,14 +28,14 @@ BASEDIR=$(dirname "$0")
 # Change Shell execution to the place where the script lies
 cd "$BASEDIR"
 
+# Path to stilts program
+stilts_dir="${BASEDIR}/stilts.jar"
+
 # Jointype
 jointype=1and2
 
 # Output Path
-outPath="${BASEDIR}/finalCatalogue.fits"
-
-# Path to stilts program
-stilts_dir="${BASEDIR}/stilts.jar"
+outPath="${BASEDIR}/../catalogues/finalCatalogue.fits"
 
 exit
 ###############################
