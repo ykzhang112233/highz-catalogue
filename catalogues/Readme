@@ -2,3 +2,43 @@ This folder is the .fits cataluges that used for the cross-matching.
 
 
 Survey catalogue information:
+++++++++++++++++++++Redshifts+++++++++++++++++++++
+First I use Half Million Quasar (Flesch 2015,) to get quasar redshift, it include the following catalogues:
+-  SDSS quasar catalogue till DR12 (Paris et al. 2017)	2017A&A...597A..79P
+
+other high-z surveys after Flesch 2015 to check:
+- Dark Energy hi-z, Reed S.L. et al., 2015MNRAS.454.3952R--OzDES:2017MNRAS.472..273C []
+- DECaLS-UKIRT hi-z, Wang F. et al., 2017ApJ...839...27W (see citations) []
+- SDSS overlap hi-z QSOs, Jiang L. et al.,2015AJ....149..188J(within Jiang 2016)
+- PAN-STARRS1 hi-z, Banados E. et al. 2016,Cat. J/ApJS/227/11-2016ApJS..227...11B []
+- SDSS hi-z, Jiang L. et al., 2016ApJ...833..222J (manually) []
+- Subaru hi-z, Matsuoka Y. et al.,2017,arXiv:1704.05854, PASJ (manually in refs-SHELLQs)
+- VST ATLAS hi-z, Carnall A.C. et al.,2015MNRAS.451L..16C (2 quasars) --
+- Hi-z QSOs from WISE, Wang F. et al.,2016, Cat. J/ApJ/819/24
+
++++++++++++++++++++++++++cross-match radius+++++++++++++++++++++++++
+positional error of gleam is <20"
+plus RMS ~5"... we use 25" radius to cross-match
+
++++++++++++++++++++other info.++++++++++++++++++++++++++++++
+gleam synth beam 210-93",searching radius can be reduced to 105"(at most), and individual cases can be judged through catalogue PSF values.
+Callingham used an angular cutoff of 2′20′′(70" in radius), which is approximately the FWHM of the MWA beam in the wideband image
+nvss beam 45"
+first 5.4" circle in north, 6.4*5.4" in mid, 6.8*5.4" south
+only look for spectroscopic redshifts
+
+The Very Large Array Sky Survey (VLASS) is observing the entire sky north of -40° in the S-band (2-4GHz), with the highest angular resolution (2.5") of any all-sky radio continuum survey to date
+
+steep spectrum bias: In sdss12 data, we found more than 3 galaxies without zsp or with zsp<1 within 30" of the gleam positions, so the optical counterparts may not be the high-z AGN but low-z galaxies which show steep spectrum in radio bands.
+
+The searching was cross-matched with 30" but for checking multi-matched sources in a gleam position, should check with a radius related to the gleam beam sizes....
+
+The multi-frequency data from literature are obtained from the following surveys or papers:
+   1. nvss
+   2. first
+   3. TGSS
+   4. vlss; vlssr
+   5. SUMSS;SUMSSr
+   5.5 CLASS+CRATES
+   6. GB6
+   7. PMN
