@@ -1,10 +1,10 @@
 # high-z_catalogue
 
-# Author: 	Yingkang Zhang
-# E-Mail: 	ykzhang@shao.ac.cn
-# Date: 	2025-2-14
-# Institution:	SHAO - Shanghai Astronomical Observatory, CAS, China
-#		        CSIRO, Australia
+### Author: 	Yingkang Zhang
+### E-Mail: 	ykzhang@shao.ac.cn
+### Date: 	2025-2-14
+### Institution:	SHAO - Shanghai Astronomical Observatory, CAS, China
+###	Institution2:   CSIRO, Australia
 
 
 

@@ -1,8 +1,24 @@
-This folder is the .fits cataluges that used for the cross-matching.
+This folder contains the .fits cataluges that used for the cross-matching.
 
+
+## 1. Main catalogues
+### **Optical redshifts**
+- SDSS dr16q https://data.sdss.org/sas/dr16/eboss/qso/DR16Q/
+
+### **Radio catalogues**
+In the northern sky:
+- NVSS (Condon et al. 1998, Cat. VIII/65)
+- FIRST (Becker et al. 1995, Cat. VIII/71)
+- TGSS (Intema et al. 2017, Cat. VIII/100)
+- VLSS (Cohen et al. 2007, Cat. VIII/100)
+- VLSSr (Lane et al. 2014, Cat. VIII/100)
+
+In the southern sky:
+- GLEAM 
+- RACS (Hale et al. 2021, Cat. J/MNRAS/501/3000)
 
 Survey catalogue information:
-++++++++++++++++++++Redshifts+++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++Redshifts+++++++++++++++++++++++++++++++++++++++++++++++++++++
 First I use Half Million Quasar (Flesch 2015,) to get quasar redshift, it include the following catalogues:
 -  SDSS quasar catalogue till DR12 (Paris et al. 2017)	2017A&A...597A..79P
 
@@ -16,7 +32,7 @@ other high-z surveys after Flesch 2015 to check:
 - VST ATLAS hi-z, Carnall A.C. et al.,2015MNRAS.451L..16C (2 quasars) --
 - Hi-z QSOs from WISE, Wang F. et al.,2016, Cat. J/ApJ/819/24
 
-+++++++++++++++++++++++++cross-match radius+++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++cross-match radius++++++++++++++++++++++++++++++++++++++++++++++++
 positional error of gleam is <20"
 plus RMS ~5"... we use 25" radius to cross-match
 
