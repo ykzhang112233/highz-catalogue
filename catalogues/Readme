@@ -9,9 +9,9 @@ This folder contains the .fits cataluges that used for the cross-matching.
 In the northern sky:
 - NVSS (Condon et al. 1998, Cat. VIII/65)
 - FIRST (Becker et al. 1995, Cat. VIII/71)
-- TGSS (Intema et al. 2017, Cat. VIII/100)
+<!-- - TGSS (Intema et al. 2017, Cat. VIII/100)
 - VLSS (Cohen et al. 2007, Cat. VIII/100)
-- VLSSr (Lane et al. 2014, Cat. VIII/100)
+- VLSSr (Lane et al. 2014, Cat. VIII/100) -->
 
 In the southern sky:
 - GLEAM 
