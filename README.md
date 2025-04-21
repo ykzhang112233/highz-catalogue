@@ -23,3 +23,5 @@ Catalogues used (see /catalogues for details):
 
 ## Acknowledgement
   [1] This work is supported by the Shanghai Sailing Program under grant number 22YF1456100
+
+  [2] TA thanks Fabio Luchsinger from CSIRO for their STILTS tutorial talk, which inspired the cross-matching methodology used in this work.
