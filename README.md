@@ -3,29 +3,22 @@
 ### Author: 	Yingkang Zhang
 ### E-Mail: 	ykzhang@shao.ac.cn
 ### Date: 	2025-2-14
-### Institution:	SHAO - Shanghai Astronomical Observatory, CAS, China
+### Institution1:	SHAO - Shanghai Astronomical Observatory, CAS, China
 ###	Institution2:   CSIRO, Australia
 
 
+## Basic info
+We generate this catalogue that contains the most comprehensive cross-matching and analysis of radio quasars at redshifts > 3.
 
- We generate this catalogue that contains the most comprehensive cross-matching and analysis of radio quasars at redshifts > 3.
- 
-
-
-
-
-Catalogues used (see /catalogues): 
-- xxxx catalogue [1]
--
--
+Update time: 2025-02-01
 
 
-Sources:
-[1] 
 
-refs
-[1] LOFAR observations XMM-LSS field (Hale+, 2019) through VizieR
-[2] https://entangled.physics.ox.ac.uk/index.php/s/gEw8psSgijR9NRx
-[3] https://archive-gw-1.kat.ac.za/public/repository/10.48479/emmd-kf31/index.html
+Catalogues used (see /catalogues for details): 
+- SDSS dr16q (2020ApJS..250....8L)
+- NVSS (1998AJ....115.1693C)
+- FIRST (2015ApJ...801...26H)
+- GLEAM (2017MNRAS.464.1146H)
+- RACS (2021PASA...38...58H)
 
 
