@@ -12,7 +12,7 @@ We generate this catalogue that contains the most comprehensive cross-matching a
 
 Update time: 2025-02-01
 
-
+The STILTS scripts are used to do the cross-matching (see /scripts for details)
 
 Catalogues used (see /catalogues for details): 
 - SDSS dr16q (2020ApJS..250....8L)
