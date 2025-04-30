@@ -11,6 +11,12 @@
 
 
 # Script Description:
+# This script shall crossmatch 
+# LOFAR HBA Observations with
+# MeerKAT L-Band
+# JVLA 1-2 GHz
+# to finally produce a new catalogue
+# in the field of XMM-LSS
 
 ###########################################
 ##### 1. Init ##### 
@@ -32,24 +38,14 @@ jointype=1and2
 outPath="${CAT_DIR/finalCatalogue.fits"
 
 exit
-
 ############################################################
 ##### 2. Define input paths ##### 
-SDSSdr16q="${CAT_DIR}/DR16Q_v4.fits"
-FIRSTcat="${CAT_DIR}/first14.fits"
-NVSScat="${CAT_DIR}/nvss.fits"
-GLEAMcat="${CAT_DIR}/gleam_full.fits"
-RACScat="${CAT_DIR}/racs1.fits"
 
-######
-# 3. compress the sdss catalogue
+PathMIGHTEE="${BASEDIR}/MIGHTEE_Continuum_Early_Science_XMMLSS_Level1.fits"
 
-# 4. Compress the radio catalogues
-# keep only the columns that are needed for crossmatching (e.g. position and its error, psf, representative flux density)
-Cols_first14='keepcols ""'
-Cols_nvss='keepcols ""'
-Cols_gleam='keepcols ""'
-Cols_racs='keepcols ""'
+PathLOFAR="${BASEDIR}/lofar-xmmlss.fits"
+
+PathVLA="${BASEDIR}/VLA_XMM-VIDEO_catalogue_R2.fits"
 
 ############################################################
 ##### 3. Columns to keep ##### 
