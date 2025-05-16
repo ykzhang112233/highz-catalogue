@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# Script Description:
+# 
+###########################################
+##### 1. Init ##### 
+clear
+
+# Get Directory where script is located
+# BASEDIR is the directory where the script is located; CAT_DIR is the directory where the catalogues are located
+BASEDIR=$(dirname "$0")
+CAT_DIR="${BASEDIR}/../catalogues"
+echo "BASEDIR: $BASEDIR"
+
+# Change Shell execution to the place where the script lies
+cd "$BASEDIR"
+
+# Path to stilts program
+stilts_dir="${BASEDIR}/stilts.jar"
+
+# Jointype
+jointype=1and2
+
+# Output catalogue Path should be in CAT_DIR
+outPath="${CAT_DIR}/finalCatalogue.fits"
+
+############################################################
+##### 2. Define input paths from the previous output #####
+cat_sdss="${CAT_DIR}/tmp_sdss.fits"
+cat_sdss_hz="${CAT_DIR}/tmp_sdssz3.fits"
+cat_first="${CAT_DIR}/tmp_first.fits"
+cat_nvss="${CAT_DIR}/tmp_nvss.fits"
+cat_gleam="${CAT_DIR}/tmp_gleam.fits"
+cat_racs="${CAT_DIR}/tmp_racs.fits"
+############################################################
+# 3. Conduct the first matching
+
+
+
+java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" cmd="$Cols_SDSSdr16q" out=tmp_sdss.fits
+java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
+                            cmd="$Cols_SDSSdr16q" \
+                            cmd='select "z > 3"' \
+                            out=tmp_sdssz3.fits
+
+# 4. Compress the radio catalogues
+# keep only the columns that are needed for crossmatching (e.g. position and its error, psf, representative flux density)
+Cols_first14='keepcols "FIRST RAJ2000 DEJ2000 Fpeak Fint Rms Maj Min PA"'
+
+Cols_nvss='keepcols "NVSS RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 S1.4 e_S1.4 MajAxis MinAxis"'
+
+Cols_gleam='keepcols "GLEAM RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Fpwide e_Fpwide Fintwide e_Fintwide \
+                      awide e_awide bwide e_bwide pawide psfawide psfbwide psfPAwide"'
+
+Cols_racs='keepcols "RACS-DR1 RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA"'
+
+java -jar $stilts_dir tpipe ifmt=fits "$FIRSTcat" \
+                            cmd="$Cols_first14" \
+                            out=tmp_first.fits
+
+java -jar $stilts_dir tpipe ifmt=fits "$NVSScat" \
+                            cmd="$Cols_nvss" \
+                            out=tmp_nvss.fits
+
+java -jar $stilts_dir tpipe ifmt=fits "$GLEAMcat" \
+                            cmd="$Cols_gleam" \
+                            out=tmp_gleam.fits
+
+java -jar $stilts_dir tpipe ifmt=fits "$RACScat" \
+                            cmd="$Cols_racs" \
+                            out=tmp_racs.fits
+
+exit
