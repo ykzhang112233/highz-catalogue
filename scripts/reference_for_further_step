@@ -1,0 +1,8 @@
+
+# to select raws within the beam
+stilts tpipe in=matched_table.fits \
+       cmd='select separation <= bmin' \
+       out=filtered_table.fits
+
+
+# check the latest one from chatGBT for help on codes
