@@ -55,28 +55,35 @@ java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
 
 # 4. Compress the radio catalogues
 # keep only the columns that are needed for crossmatching (e.g. position and its error, psf, representative flux density)
-Cols_first14='keepcols "FIRST RAJ2000 DEJ2000 Fpeak Fint Rms Maj Min PA"'
+sex_to_deg='addskycoords -inunit sexagesimal -outunit degrees fk5 icrs RAJ2000 DEJ2000 RA_deg DEC_deg'
+deg_to_deg='addskycoords -inunit degrees -outunit degrees fk5 icrs RAJ2000 DEJ2000 RA_deg DEC_deg'
 
-Cols_nvss='keepcols "NVSS RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 S1.4 e_S1.4 MajAxis MinAxis"'
+Cols_first14='keepcols "FIRST RA_deg DEC_deg Fpeak Fint Rms Maj Min PA"'
 
-Cols_gleam='keepcols "GLEAM RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Fpwide e_Fpwide Fintwide e_Fintwide \
+Cols_nvss='keepcols "NVSS RA_deg e_RAJ2000 DEC_deg e_DEJ2000 S1.4 e_S1.4 MajAxis MinAxis"'
+
+Cols_gleam='keepcols "GLEAM RA_deg e_RAJ2000 DEC_deg e_DEJ2000 Fpwide e_Fpwide Fintwide e_Fintwide \
                       awide e_awide bwide e_bwide pawide psfawide psfbwide psfPAwide"'
 
-Cols_racs='keepcols "RACS-DR1 RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA"'
+Cols_racs='keepcols "RACS-DR1 RA_deg e_RAJ2000 DEC_deg e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA"'
 
 java -jar $stilts_dir tpipe ifmt=fits "$FIRSTcat" \
+                            cmd="$sex_to_deg" \
                             cmd="$Cols_first14" \
                             out=tmp_first.fits
 
 java -jar $stilts_dir tpipe ifmt=fits "$NVSScat" \
+                            cmd="$sex_to_deg" \
                             cmd="$Cols_nvss" \
                             out=tmp_nvss.fits
 
 java -jar $stilts_dir tpipe ifmt=fits "$GLEAMcat" \
+                            cmd="$deg_to_deg" \
                             cmd="$Cols_gleam" \
                             out=tmp_gleam.fits
 
 java -jar $stilts_dir tpipe ifmt=fits "$RACScat" \
+                            cmd="$deg_to_deg" \
                             cmd="$Cols_racs" \
                             out=tmp_racs.fits
 

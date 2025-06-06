@@ -33,11 +33,8 @@ other high-z surveys after Flesch 2015 to check:
 - Hi-z QSOs from WISE, Wang F. et al.,2016, Cat. J/ApJ/819/24
 
 ++++++++++++++++++++++++++++++++++++++cross-match radius++++++++++++++++++++++++++++++++++++++++++++++++
-positional error of gleam is <20"
-plus RMS ~5"... we use 25" radius to cross-match
 
-+++++++++++++++++++other info.++++++++++++++++++++++++++++++
-gleam synth beam 210-93",searching radius can be reduced to 105"(at most), and individual cases can be judged through catalogue PSF values.
+gleam synth beam 210-93",searching radius can be reduced to 100"(at most), and individual cases can be judged through catalogue PSF values.
 Callingham used an angular cutoff of 2′20′′(70" in radius), which is approximately the FWHM of the MWA beam in the wideband image
 nvss beam 45"
 first 5.4" circle in north, 6.4*5.4" in mid, 6.8*5.4" south

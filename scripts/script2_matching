@@ -10,6 +10,7 @@ clear
 # BASEDIR is the directory where the script is located; CAT_DIR is the directory where the catalogues are located
 BASEDIR=$(dirname "$0")
 CAT_DIR="${BASEDIR}/../catalogues"
+TEMP_DIR=${BASEDIR}
 echo "BASEDIR: $BASEDIR"
 
 # Change Shell execution to the place where the script lies
@@ -18,56 +19,52 @@ cd "$BASEDIR"
 # Path to stilts program
 stilts_dir="${BASEDIR}/stilts.jar"
 
-# Jointype
-jointype=1and2
-
-# Output catalogue Path should be in CAT_DIR
-outPath="${CAT_DIR}/finalCatalogue.fits"
 
 ############################################################
 ##### 2. Define input paths from the previous output #####
-cat_sdss="${CAT_DIR}/tmp_sdss.fits"
-cat_sdss_hz="${CAT_DIR}/tmp_sdssz3.fits"
-cat_first="${CAT_DIR}/tmp_first.fits"
-cat_nvss="${CAT_DIR}/tmp_nvss.fits"
-cat_gleam="${CAT_DIR}/tmp_gleam.fits"
-cat_racs="${CAT_DIR}/tmp_racs.fits"
+cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
+cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
+cat_r1="${TEMP_DIR}/tmp_first.fits" # radio catalogue1
+cat_r2="${TEMP_DIR}/tmp_nvss.fits"  # radio catalogue2
+cat_r3="${TEMP_DIR}/tmp_gleam.fits" # radio catalogue3
+cat_r4="${TEMP_DIR}/tmp_racs.fits"  # radio catalogue4
 ############################################################
 # 3. Conduct the first matching
+## 3.1 Set the matching radius for different catalogues and join type
+raidus_o1r1=3   # First 5"
+raidus_o1r2=25  # NVSS 45"
+raidus_o1r3=100 # gleam psfmin <200"
+raidus_o1r4=15  # RACS 25"
+# jointype=1and2  
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r1}" out=match1_o1r1.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r1" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r1
+echo "---> Crossmatched O1R1"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r2}" out=match1_o1r2.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r2" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r2
+echo "---> Crossmatched O1R2"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r3}" out=match1_o1r3.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r3" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r3
+echo "---> Crossmatched O1R3"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r4}" out=match1_o1r4.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r4" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r4
+echo "---> Crossmatched O1R4"
 
 
-
-java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" cmd="$Cols_SDSSdr16q" out=tmp_sdss.fits
-java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
-                            cmd="$Cols_SDSSdr16q" \
-                            cmd='select "z > 3"' \
-                            out=tmp_sdssz3.fits
-
-# 4. Compress the radio catalogues
-# keep only the columns that are needed for crossmatching (e.g. position and its error, psf, representative flux density)
-Cols_first14='keepcols "FIRST RAJ2000 DEJ2000 Fpeak Fint Rms Maj Min PA"'
-
-Cols_nvss='keepcols "NVSS RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 S1.4 e_S1.4 MajAxis MinAxis"'
-
-Cols_gleam='keepcols "GLEAM RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Fpwide e_Fpwide Fintwide e_Fintwide \
-                      awide e_awide bwide e_bwide pawide psfawide psfbwide psfPAwide"'
-
-Cols_racs='keepcols "RACS-DR1 RAJ2000 e_RAJ2000 DEJ2000 e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA"'
-
-java -jar $stilts_dir tpipe ifmt=fits "$FIRSTcat" \
-                            cmd="$Cols_first14" \
-                            out=tmp_first.fits
-
-java -jar $stilts_dir tpipe ifmt=fits "$NVSScat" \
-                            cmd="$Cols_nvss" \
-                            out=tmp_nvss.fits
-
-java -jar $stilts_dir tpipe ifmt=fits "$GLEAMcat" \
-                            cmd="$Cols_gleam" \
-                            out=tmp_gleam.fits
-
-java -jar $stilts_dir tpipe ifmt=fits "$RACScat" \
-                            cmd="$Cols_racs" \
-                            out=tmp_racs.fits
 
 exit
