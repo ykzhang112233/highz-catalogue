@@ -41,10 +41,41 @@ java -jar $stilts_dir tpipe ifmt=fits in="${matched_r1}" \
     cmd="$selection1" \
     out=filtered_r1.fits
 
+# 2.  After filtering, adjust the groupIDs accordingly
+java -jar $stilts_dir tgroup in=filtered_r1.fits \
+    keys=GroupID \
+    aggcols="0;count;GroupCount" \
+    out=group_count.fits
 
-# flag_t1='addcol source_flag select "isnull(GroupID)"'
+java -jar $stilts_dir tpipe in=group_count.fits \
+    cmd='select "GroupCount == 1"' \
+    out=singleton_groupids.fits
+
+java -jar $stilts_dir tmatch2 \
+    in1=filtered_r1.fits \
+    in2=singleton_groupids.fits \
+    matcher=exact \
+    join=all1 \
+    values1=GroupID values2=GroupID \
+    out=temp_with_gcount.fits
+
+java -jar $stilts_dir tpipe \
+    in=temp_with_gcount.fits \
+    cmd='delcols GroupID_2' \
+    cmd='colmeta -name GroupID $30' \
+    out=temp_with_gcount.fits
+
+rpl_cmd='replacecol GroupID "GroupCount != NULL && GroupCount == 1 ? NULL : GroupID"'
+java -jar $stilts_dir tpipe ifmt=fits \
+    in=temp_with_gcount.fits \
+    cmd="$rpl_cmd" \
+    out=filtered_r1_CLN.fits
+
+# 3. Flag the high-z and single matched sources as tier 1
+
 flag_cmd1='addcol source_tier "NULL_GroupID && Z_o1>=3 ? 1 : 0"'
-java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1.fits \
+# flag_cmd2='replacecol source_tier "source_tier == 0 && "
+java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1_CLN.fits \
     cmd="$flag_cmd1" \
     out=mr1_t1.fits
 
