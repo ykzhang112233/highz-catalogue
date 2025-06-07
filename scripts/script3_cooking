@@ -42,12 +42,13 @@ java -jar $stilts_dir tpipe ifmt=fits in="${matched_r1}" \
     out=filtered_r1.fits
 
 
-exit
-
-flag_t1='addcol source_flag select "isnull(GroupID)"'
+# flag_t1='addcol source_flag select "isnull(GroupID)"'
+flag_cmd1='addcol source_tier "NULL_GroupID && Z_o1>=3 ? 1 : 0"'
 java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1.fits \
-    cmd="$selection_g" \
+    cmd="$flag_cmd1" \
     out=mr1_t1.fits
+
+exit
 
 # 2. Identify singleton group IDs
 java -jar $stilts_dir tpipe in=filtered_r1.fits \
