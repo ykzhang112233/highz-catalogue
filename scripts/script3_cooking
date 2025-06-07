@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# Script Description:
+# 
+###########################################
+##### 1. Init ##### 
+clear
+
+# Get Directory where script is located
+# BASEDIR is the directory where the script is located; CAT_DIR is the directory where the catalogues are located
+BASEDIR=$(dirname "$0")
+CAT_DIR="${BASEDIR}/../catalogues"
+TEMP_DIR=${BASEDIR}
+echo "BASEDIR: $BASEDIR"
+
+# Change Shell execution to the place where the script lies
+cd "$BASEDIR"
+
+# Path to stilts program
+stilts_dir="${BASEDIR}/stilts.jar"
+
+
+############################################################
+##### 2. Define input paths from the previous output #####
+cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
+cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
+matched_r1="${TEMP_DIR}/match1_o1r1.fits" # matched radio catalogue1
+matched_r2="${TEMP_DIR}/match1_o1r2.fits"  # matched radio catalogue2
+matched_r3="${TEMP_DIR}/match1_o1r3.fits" # matched radio catalogue3
+matched_r4="${TEMP_DIR}/match1_o1r4.fits"  # matched radio catalogue4
+############################################################
+# 3. Define the cooking criteria
+## 3.1 Set the matching radius for different catalogues and join type
+# raidus_o1r1=3   # First 5"
+# raidus_o1r2=25  # NVSS 45"
+# raidus_o1r3=100 # gleam psfmin <200"
+# raidus_o1r4=15  # RACS 25"
+# 1. Filter by distance
+selection1='select "(Min_r1 == 0 && Maj_r1 == 0) || (Min_r1 == 0 && Maj_r1 !=0 && Separation < Maj_r1) || (Min_r1 != 0 && Separation < Min_r1)"'
+java -jar $stilts_dir tpipe ifmt=fits in="${matched_r1}" \
+    cmd="$selection1" \
+    out=filtered_r1.fits
+
+
+exit
+
+flag_t1='addcol source_flag select "isnull(GroupID)"'
+java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1.fits \
+    cmd="$selection_g" \
+    out=mr1_t1.fits
+
+# 2. Identify singleton group IDs
+java -jar $stilts_dir tpipe in=filtered_r1.fits \
+    cmd='groupby GroupID count:count' \
+    cmd='select "count == 1"' \
+    out=singleton_groups.fits
+
+exit
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r1}" out=match1_o1r1.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r1" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r1
+echo "---> Crossmatched O1R1"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r2}" out=match1_o1r2.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r2" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r2
+echo "---> Crossmatched O1R2"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r3}" out=match1_o1r3.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r3" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r3
+echo "---> Crossmatched O1R3"
+
+java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r4}" out=match1_o1r4.fits \
+                               values1="RA DEC" values2="RA_deg DEC_deg" \
+                               matcher=sky params="$raidus_o1r4" \
+                               join="1and2" find="all" \
+                               fixcols=all suffix1=_o1 suffix2=_r4
+echo "---> Crossmatched O1R4"
+
+
+
+exit

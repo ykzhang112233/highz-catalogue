@@ -6,3 +6,9 @@ stilts tpipe in=matched_table.fits \
 
 
 # check the latest one from chatGBT for help on codes
+
+do filtering for each matched cats
+
+first filter: separation > bmin
+
+second filter
