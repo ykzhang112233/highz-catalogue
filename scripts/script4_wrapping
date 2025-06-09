@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+
+# Script Description:
+# 
+###########################################
+##### 1. Init ##### 
+clear
+
+# Get Directory where script is located
+# BASEDIR is the directory where the script is located; CAT_DIR is the directory where the catalogues are located
+BASEDIR=$(dirname "$0")
+CAT_DIR="${BASEDIR}/../catalogues"
+TEMP_DIR=${BASEDIR}
+echo "BASEDIR: $BASEDIR"
+
+# Change Shell execution to the place where the script lies
+cd "$BASEDIR"
+
+# Path to stilts program
+stilts_dir="${BASEDIR}/stilts.jar"
+
+
+############################################################
+##### 2. Define input paths from the previous output #####
+cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
+cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
+matched_r1="${TEMP_DIR}/match1_o1r1.fits" # matched radio catalogue1
+matched_r2="${TEMP_DIR}/match1_o1r2.fits"  # matched radio catalogue2
+matched_r3="${TEMP_DIR}/match1_o1r3.fits" # matched radio catalogue3
+matched_r4="${TEMP_DIR}/match1_o1r4.fits"  # matched radio catalogue4
+############################################################
+# 3. Define the cooking criteria
+## 3.1 Set the matching radius for different catalogues and join type
+# raidus_o1r1=3   # First 5"
+# raidus_o1r2=25  # NVSS 45"
+# raidus_o1r3=100 # gleam psfmin <200"
+# raidus_o1r4=15  # RACS 25"
+# 1. Filter by distance
+radio_cats=("${matched_r1}" "${matched_r2}" "${matched_r3}" "${matched_r4}")
+psfmajs=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj_r4")
+psfmins=("Min_r1" "MinAxis_r2" "psfbwide_r3" "bmin_r4")
+
+for i in "${!radio_cats[@]}"; do
+    num=$(($i + 1))
+    radio_cat=${radio_cats[$i]}
+    psfmaj=${psfmajs[$i]}
+    psfmin=${psfmins[$i]}
+    fits_temp="filtered_r${num}.fits"
+    out_file="mr${num}_t${num}.fits"
+
+    echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
+    selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
+    echo "do $selection1"
+    java -jar $stilts_dir tpipe ifmt=fits in="${radio_cat}" \
+        cmd="$selection1" \
+        out="${fits_temp}"
+
+    # 2.  After filtering, adjust the groupIDs accordingly
+    java -jar $stilts_dir tgroup in="${fits_temp}" \
+        keys=GroupID \
+        aggcols="0;count;GroupCount" \
+        out=group_count.fits
+    java -jar $stilts_dir tpipe in=group_count.fits \
+        cmd='select "GroupCount == 1"' \
+        out=singleton_groupids.fits
+
+    java -jar $stilts_dir tmatch2 \
+        in1="${fits_temp}" \
+        in2=singleton_groupids.fits \
+        matcher=exact \
+        join=all1 \
+        values1=GroupID values2=GroupID \
+        out=temp_with_gcount.fits
+
+    java -jar $stilts_dir tpipe \
+        in=temp_with_gcount.fits \
+        cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
+        cmd='delcols GroupID_2' \
+        cmd='delcols GroupID_1' \
+        out=temp_with_gcount.fits
+
+    rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
+    rpl_cmd2='replaceval NULL 1 "GroupSize"'
+    java -jar $stilts_dir tpipe ifmt=fits \
+        in=temp_with_gcount.fits \
+        cmd="$rpl_cmd" \
+        cmd="$rpl_cmd2" \
+        out="${fits_temp}"
+
+    # 3. Flag the high-z and single matched sources as tier 1
+    flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
+    # flag_cmd2='replacecol source_tier "source_tier == 0 && "
+    java -jar $stilts_dir tpipe ifmt=fits in="${fits_temp}" \
+        cmd="$flag_cmd1" \
+        out="${out_file}"
+
+done
+
+exit
+
+
+# 2.  After filtering, adjust the groupIDs accordingly
+java -jar $stilts_dir tgroup in="filtered_r1" \
+    keys=GroupID \
+    aggcols="0;count;GroupCount" \
+    out=group_count.fits
+java -jar $stilts_dir tpipe in=group_count.fits \
+    cmd='select "GroupCount == 1"' \
+    out=singleton_groupids.fits
+
+java -jar $stilts_dir tmatch2 \
+    in1=filtered_r1.fits \
+    in2=singleton_groupids.fits \
+    matcher=exact \
+    join=all1 \
+    values1=GroupID values2=GroupID \
+    out=temp_with_gcount.fits
+
+java -jar $stilts_dir tpipe \
+    in=temp_with_gcount.fits \
+    cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
+    cmd='delcols GroupID_2' \
+    cmd='delcols GroupID_1' \
+    out=temp_with_gcount.fits
+exit
+
+#Note, if you don't specify the !NULL option, stilts will treat the ELSE condition (when GroupCount is NULL) as NULL, so it will give GroupSize = NULL rather than keeping the original GroupSize value.
+rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
+# This may overlappipng with the previous command, but it is necessary to ensure that GroupSize is set to 1 for singleton groups.
+rpl_cmd2='replaceval NULL 1 "GroupSize"'
+java -jar $stilts_dir tpipe ifmt=fits \
+    in=temp_with_gcount.fits \
+    cmd="$rpl_cmd" \
+    cmd="$rpl_cmd2" \
+    out=filtered_r1_CLN.fits
+
+# 3. Flag the high-z and single matched sources as tier 1
+
+flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
+# flag_cmd2='replacecol source_tier "source_tier == 0 && "
+java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1_CLN.fits \
+    cmd="$flag_cmd1" \
+    out=mr1_t1.fits
+
+exit
+
+
