@@ -1,7 +1,0 @@
-# The following command can be copy-pasted to CLI but it does not really download a catalogue
-# Currently it is not used
-java -jar stilts.jar tapquery \
-  tapurl="http://tapvizier.cds.unistra.fr/TAPVizieR/tap" \
-  adql='SELECT * FROM "VIII/92/first14"' \
-  ofmt=fits \
-  out=./first14.fits
