@@ -40,136 +40,105 @@ radio_cats=("${matched_r1}" "${matched_r2}" "${matched_r3}" "${matched_r4}")
 psfmajs=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj_r4")
 psfmins=("Min_r1" "MinAxis_r2" "psfbwide_r3" "bmin_r4")
 
-# for i in "${!radio_cats[@]}"; do
-#     num=$(($i + 1))
-#     radio_cat=${radio_cats[$i]}
-#     psfmaj=${psfmajs[$i]}
-#     psfmin=${psfmins[$i]}
-#     fits_temp="filtered_r${num}.fits"
-#     out_file="mr${num}_t${num}.fits"
+for i in "${!radio_cats[@]}"; do
+    num=$(($i + 1))
+    radio_cat=${radio_cats[$i]}
+    psfmaj=${psfmajs[$i]}
+    psfmin=${psfmins[$i]}
+    fits_temp="filtered_r${num}.fits"
+    out_file="mr${num}_t${num}.fits"
 
-#     echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
-#     selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
-#     echo "do $selection1"
-#     java -jar $stilts_dir tpipe ifmt=fits in="${radio_cat}" \
-#         cmd="$selection1" \
-#         out="${fits_temp}"
+    echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
+    selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
+    echo "do $selection1"
+    java -jar $stilts_dir tpipe ifmt=fits in="${radio_cat}" \
+        cmd="$selection1" \
+        out="${fits_temp}"
+    echo "Finishing selection by distance (1/5)"
+    # 2.  After filtering, adjust the groupIDs accordingly
+    java -jar $stilts_dir tgroup in="${fits_temp}" \
+        keys=GroupID \
+        aggcols="0;count;GroupCount" \
+        out=group_count.fits
+    echo "Grouped ${radio_cat} by GroupID, count: GroupCount (2/5)"
+    # 3. Begin looking for tier1 sources (single match)
+    java -jar $stilts_dir tpipe in=group_count.fits \
+        cmd='select "GroupCount == 1"' \
+        out=singleton_groupids.fits
 
-#     # 2.  After filtering, adjust the groupIDs accordingly
-#     java -jar $stilts_dir tgroup in="${fits_temp}" \
-#         keys=GroupID \
-#         aggcols="0;count;GroupCount" \
-#         out=group_count.fits
-#     java -jar $stilts_dir tpipe in=group_count.fits \
-#         cmd='select "GroupCount == 1"' \
-#         out=singleton_groupids.fits
+    java -jar $stilts_dir tmatch2 \
+        in1="${fits_temp}" \
+        in2=singleton_groupids.fits \
+        matcher=exact \
+        join=all1 \
+        values1=GroupID values2=GroupID \
+        out=temp_with_gcount.fits
 
-#     java -jar $stilts_dir tmatch2 \
-#         in1="${fits_temp}" \
-#         in2=singleton_groupids.fits \
-#         matcher=exact \
-#         join=all1 \
-#         values1=GroupID values2=GroupID \
-#         out=temp_with_gcount.fits
+    java -jar $stilts_dir tpipe \
+        in=temp_with_gcount.fits \
+        cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
+        cmd='delcols GroupID_2' \
+        cmd='delcols GroupID_1' \
+        out=temp_with_gcount.fits
 
-#     java -jar $stilts_dir tpipe \
-#         in=temp_with_gcount.fits \
-#         cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
-#         cmd='delcols GroupID_2' \
-#         cmd='delcols GroupID_1' \
-#         out=temp_with_gcount.fits
+    rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
+    rpl_cmd2='replaceval NULL 1 "GroupSize"'
+    java -jar $stilts_dir tpipe ifmt=fits \
+        in=temp_with_gcount.fits \
+        cmd="$rpl_cmd" \
+        cmd="$rpl_cmd2" \
+        out="${fits_temp}"
+    echo "Filtered ${radio_cat} to ${fits_temp} with GroupSize adjusted for Tier1 sources. (3/5)"
+    # 4. begin looking for tier2 and tier3 sources (grouped source with all z>3 (tier2) or one of them z>3 (tier3))
+    java -jar $stilts_dir tgroup \
+        in="${fits_temp}" \
+        keys=GroupID \
+        aggcols='Z_o1;max;group_z_max Z_o1;min;group_z_min 0;count;GroupSize' \
+        out=group_zcheck.fits
 
-#     rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
-#     rpl_cmd2='replaceval NULL 1 "GroupSize"'
-#     java -jar $stilts_dir tpipe ifmt=fits \
-#         in=temp_with_gcount.fits \
-#         cmd="$rpl_cmd" \
-#         cmd="$rpl_cmd2" \
-#         out="${fits_temp}"
+    java -jar $stilts_dir tpipe \
+        in=group_zcheck.fits \
+        cmd='select "!NULL_GroupID && GroupSize > 1 && group_z_max > 3"' \
+        cmd='keepcols "GroupID group_z_min"' \
+        out=group_hz_sources.fits
+    nrows=$(java -jar $stilts_dir tpipe in=group_hz_sources.fits omode='count' | grep 'rows:' | awk '{print $4}')
 
-#     # 3. Flag the high-z and single matched sources as tier 1
-#     flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
-#     # flag_cmd2='replacecol source_tier "source_tier == 0 &&  "
-#     java -jar $stilts_dir tpipe ifmt=fits in="${fits_temp}" \
-#         cmd="$flag_cmd1" \
-#         out="${out_file}"
-
-# done
-# exit
-
-# The following codes are for single catalogue, just for reference
-# # 2.  After filtering, adjust the groupIDs accordingly
-# java -jar $stilts_dir tgroup in="filtered_r1" \
-#     keys=GroupID \
-#     aggcols="0;count;GroupCount" \
-#     out=group_count.fits
-# java -jar $stilts_dir tpipe in=group_count.fits \
-#     cmd='select "GroupCount == 1"' \
-#     out=singleton_groupids.fits
-
-# java -jar $stilts_dir tmatch2 \
-#     in1=filtered_r1.fits \
-#     in2=singleton_groupids.fits \
-#     matcher=exact \
-#     join=all1 \
-#     values1=GroupID values2=GroupID \
-#     out=temp_with_gcount.fits
-
-# java -jar $stilts_dir tpipe \
-#     in=temp_with_gcount.fits \
-#     cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
-#     cmd='delcols GroupID_2' \
-#     cmd='delcols GroupID_1' \
-#     out=temp_with_gcount.fits
-# exit
-
-# #Note, if you don't specify the !NULL option, stilts will treat the ELSE condition (when GroupCount is NULL) as NULL, so it will give GroupSize = NULL rather than keeping the original GroupSize value.
-# rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
-# # This may overlappipng with the previous command, but it is necessary to ensure that GroupSize is set to 1 for singleton groups.
-# rpl_cmd2='replaceval NULL 1 "GroupSize"'
-# java -jar $stilts_dir tpipe ifmt=fits \
-#     in=temp_with_gcount.fits \
-#     cmd="$rpl_cmd" \
-#     cmd="$rpl_cmd2" \
-#     out=filtered_r1_CLN.fits
-
-# # 3. Flag the high-z and single matched sources as tier 1
-
-# flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
-# # flag_cmd2='replacecol source_tier "source_tier == 0 && group_z_min > 3 ? 2 : 0"'
-# # flag_cmd3='replacecol source_tier "source_tier == 0 && group_z_min <= 3 && Z_o1>=3 ? 3 : 0"'
-# java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1_CLN.fits \
-#     cmd="$flag_cmd1" \
-#     out=mr1_t1.fits
-
-# cook the grouped sources
-java -jar $stilts_dir tgroup \
-    in=filtered_r3.fits \
-    keys=GroupID \
-    aggcols='Z_o1;max;group_z_max Z_o1;min;group_z_min 0;count;GroupSize' \
-    out=group_zcheck.fits
-
-java -jar $stilts_dir tpipe \
-    in=group_zcheck.fits \
-    cmd='select "!NULL_GroupID && GroupSize > 1 && group_z_max > 3"' \
-    cmd='keepcols "GroupID group_z_min"' \
-    out=r3_group_hz_sources.fits
-
-java -jar $stilts_dir tmatch2 \
-    in1=filtered_r3.fits \
-    in2=r3_group_hz_sources.fits \
-    matcher=exact \
-    join=all1 \
-    find=all \
-    values1=GroupID values2=GroupID \
-    ocmd='delcols "GroupID GroupSize"' \
-    ocmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
-    ocmd='addcol GroupSize "!NULL_GroupSize_1 ? GroupSize_1 : NULL"' \
-    ocmd='delcols "GroupID_1 GroupID_2 GroupSize_1"' \
-    out=filtered_r3_Tier23.fits
-
-        #    cmd='replacecol source_tier (
-        # source_tier < 2 && GroupID_NULL ? source_tier :
-        # (source_tier < 2 && z_min > 3 ? 3 :
-        # (source_tier < 2 ? 2 : source_tier)))' \
+    if [ "$nrows" -eq 0 ]; then
+        echo "⚠️ group_hz_sources.fits is empty, means no potential Tier2 and 3 sources, just skip the selection of high-z groups."
+        java -jar $stilts_dir tpipe ifmt=fits in="${fits_temp}" \
+            cmd='addcol group_z_min NULL' \
+            out="groups_${fits_temp}"
+        skip_t23=1
+        echo "Step (4/5) skipped, just add a NULL column group_z_min in case of error, proceeding to flagging sources."
+    else
+        echo "✅ Found $nrows high-z groups in this matched cat, proceeding..."
+        skip_t23=0
+        java -jar $stilts_dir tmatch2 \
+            in1="${fits_temp}" \
+            in2=group_hz_sources.fits \
+            matcher=exact \
+            join=all1 \
+            find=all \
+            values1=GroupID values2=GroupID \
+            ocmd='delcols "GroupID GroupSize"' \
+            ocmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
+            ocmd='addcol GroupSize "!NULL_GroupSize_1 ? GroupSize_1 : NULL"' \
+            ocmd='delcols "GroupID_1 GroupID_2 GroupSize_1"' \
+            out="groups_${fits_temp}"
+        echo "Filtered ${fits_temp} to include only groups with z>3 sources.(4/5)"
+    fi
+    
+    # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with one highz)
+    flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
+    flag_cmd2='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min > 3 ? 2 : source_tier"'
+    flag_cmd3='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min <= 3 && Z_o1>=3 ? 3 : source_tier"'
+    # flag_cmd2='replacecol source_tier "source_tier == 0 &&  "
+    java -jar $stilts_dir tpipe ifmt=fits in="groups_${fits_temp}" \
+        cmd="$flag_cmd1" \
+        cmd="$flag_cmd2" \
+        cmd="$flag_cmd3" \
+        out="${out_file}"
+    echo "Finished processing ${radio_cat} for flagging all three tiers, output saved to ${out_file} (5/5)"
+    echo "==========================================================="
+done
 exit
