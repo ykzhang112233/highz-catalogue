@@ -46,7 +46,7 @@ for i in "${!radio_cats[@]}"; do
     psfmaj=${psfmajs[$i]}
     psfmin=${psfmins[$i]}
     fits_temp="filtered_r${num}.fits"
-    out_file="mr${num}_t${num}.fits"
+    out_file="mr${num}_t123.fits"
 
     echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
     selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
