@@ -22,125 +22,79 @@ stilts_dir="${BASEDIR}/stilts.jar"
 
 ############################################################
 ##### 2. Define input paths from the previous output #####
+# The names are based on the previous script outputs
 cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
 cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
-matched_r1="${TEMP_DIR}/match1_o1r1.fits" # matched radio catalogue1
-matched_r2="${TEMP_DIR}/match1_o1r2.fits"  # matched radio catalogue2
-matched_r3="${TEMP_DIR}/match1_o1r3.fits" # matched radio catalogue3
-matched_r4="${TEMP_DIR}/match1_o1r4.fits"  # matched radio catalogue4
+matched_r1="${TEMP_DIR}/mr1_t123.fits" # matched radio catalogue1
+matched_r2="${TEMP_DIR}/mr2_t123.fits"  # matched radio catalogue2
+matched_r3="${TEMP_DIR}/mr3_t123.fits" # matched radio catalogue3
+matched_r4="${TEMP_DIR}/mr4_t123.fits"  # matched radio catalogue4
 ############################################################
-# 3. Define the cooking criteria
-## 3.1 Set the matching radius for different catalogues and join type
-# raidus_o1r1=3   # First 5"
-# raidus_o1r2=25  # NVSS 45"
-# raidus_o1r3=100 # gleam psfmin <200"
-# raidus_o1r4=15  # RACS 25"
-# 1. Filter by distance
-radio_cats=("${matched_r1}" "${matched_r2}" "${matched_r3}" "${matched_r4}")
-psfmajs=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj_r4")
-psfmins=("Min_r1" "MinAxis_r2" "psfbwide_r3" "bmin_r4")
+# 3. Group the matched catalogues
 
-for i in "${!radio_cats[@]}"; do
-    num=$(($i + 1))
-    radio_cat=${radio_cats[$i]}
-    psfmaj=${psfmajs[$i]}
-    psfmin=${psfmins[$i]}
-    fits_temp="filtered_r${num}.fits"
-    out_file="mr${num}_t${num}.fits"
-
-    echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
-    selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
-    echo "do $selection1"
-    java -jar $stilts_dir tpipe ifmt=fits in="${radio_cat}" \
-        cmd="$selection1" \
-        out="${fits_temp}"
-
-    # 2.  After filtering, adjust the groupIDs accordingly
-    java -jar $stilts_dir tgroup in="${fits_temp}" \
-        keys=GroupID \
-        aggcols="0;count;GroupCount" \
-        out=group_count.fits
-    java -jar $stilts_dir tpipe in=group_count.fits \
-        cmd='select "GroupCount == 1"' \
-        out=singleton_groupids.fits
-
-    java -jar $stilts_dir tmatch2 \
-        in1="${fits_temp}" \
-        in2=singleton_groupids.fits \
-        matcher=exact \
-        join=all1 \
-        values1=GroupID values2=GroupID \
-        out=temp_with_gcount.fits
-
-    java -jar $stilts_dir tpipe \
-        in=temp_with_gcount.fits \
-        cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
-        cmd='delcols GroupID_2' \
-        cmd='delcols GroupID_1' \
-        out=temp_with_gcount.fits
-
-    rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
-    rpl_cmd2='replaceval NULL 1 "GroupSize"'
-    java -jar $stilts_dir tpipe ifmt=fits \
-        in=temp_with_gcount.fits \
-        cmd="$rpl_cmd" \
-        cmd="$rpl_cmd2" \
-        out="${fits_temp}"
-
-    # 3. Flag the high-z and single matched sources as tier 1
-    flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
-    # flag_cmd2='replacecol source_tier "source_tier == 0 && "
-    java -jar $stilts_dir tpipe ifmt=fits in="${fits_temp}" \
-        cmd="$flag_cmd1" \
-        out="${out_file}"
-
-done
-
-exit
-
-
-# 2.  After filtering, adjust the groupIDs accordingly
-java -jar $stilts_dir tgroup in="filtered_r1" \
-    keys=GroupID \
-    aggcols="0;count;GroupCount" \
-    out=group_count.fits
-java -jar $stilts_dir tpipe in=group_count.fits \
-    cmd='select "GroupCount == 1"' \
-    out=singleton_groupids.fits
-
-java -jar $stilts_dir tmatch2 \
-    in1=filtered_r1.fits \
-    in2=singleton_groupids.fits \
-    matcher=exact \
-    join=all1 \
-    values1=GroupID values2=GroupID \
-    out=temp_with_gcount.fits
-
+java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
+    in1="${matched_r1}" in2="${matched_r2}" in3="${matched_r3}" in4="${matched_r4}" \
+    values1='SDSS_NAME_o1' values2='SDSS_NAME_o1' values3='SDSS_NAME_o1' values4='SDSS_NAME_o1' \
+    suffix1='_first' suffix2='_nvss' suffix3='_gleam' suffix4='_racs' \
+    fixcols='dups' \
+    out="${TEMP_DIR}/match1_o1r1234.fits"
+# 4 check the columns in the grouped catalogue and make unified optical columns
+## 4.1 Based on the grouped catalogue, combine the optical columns and output as a _total catalogue for referencing
+cmd_cmob1='addcol -before $1 sdss_zconf "!NULL_Z_CONF_o1_first ? Z_CONF_o1_first : (!NULL_Z_CONF_o1_nvss ? Z_CONF_o1_nvss : (!NULL_Z_CONF_o1_gleam ? Z_CONF_o1_gleam : Z_CONF_o1_racs))"'
+cmd_cmob2='addcol -before $1 sdss_zpipe "!NULL_Z_PIPE_o1_first ? Z_PIPE_o1_first : (!NULL_Z_PIPE_o1_nvss ? Z_PIPE_o1_nvss : (!NULL_Z_PIPE_o1_gleam ? Z_PIPE_o1_gleam : Z_PIPE_o1_racs))"'
+cmd_cmob3='addcol -before $1 sdss_zvi "!NULL_Z_VI_o1_first ? Z_VI_o1_first : (!NULL_Z_VI_o1_nvss ? Z_VI_o1_nvss : (!NULL_Z_VI_o1_gleam ? Z_VI_o1_gleam : Z_VI_o1_racs))"'
+cmd_cmob4='addcol -before $1 sdss_source_z "!NULL_SOURCE_Z_o1_first ? SOURCE_Z_o1_first : (!NULL_SOURCE_Z_o1_nvss ? SOURCE_Z_o1_nvss : (!NULL_SOURCE_Z_o1_gleam ? SOURCE_Z_o1_gleam : SOURCE_Z_o1_racs))"'
+cmd_comb5='addcol -before $1 sdss_z "!NULL_Z_o1_first ? Z_o1_first : (!NULL_Z_o1_nvss ? Z_o1_nvss : (!NULL_Z_o1_gleam ? Z_o1_gleam : Z_o1_racs))"'
+cmd_comb6='addcol -before $1 sdss_dec "!NULL_DEC_o1_first ? DEC_o1_first : (!NULL_DEC_o1_nvss ? DEC_o1_nvss : (!NULL_DEC_o1_gleam ? DEC_o1_gleam : DEC_o1_racs))"'
+cmd_comb7='addcol -before $1 sdss_ra "!NULL_RA_o1_first ? RA_o1_first : (!NULL_RA_o1_nvss ? RA_o1_nvss : (!NULL_RA_o1_gleam ? RA_o1_gleam : RA_o1_racs))"'
+cmd_comb8='addcol -before $1 sdss_name "!NULL_SDSS_NAME_o1_first ? SDSS_NAME_o1_first : (!NULL_SDSS_NAME_o1_nvss ? SDSS_NAME_o1_nvss : (!NULL_SDSS_NAME_o1_gleam ? SDSS_NAME_o1_gleam : SDSS_NAME_o1_racs))"'
+# command for deleting the original columns
+cmd_del1='delcols "Z_CONF_o1_first Z_CONF_o1_nvss Z_CONF_o1_gleam Z_CONF_o1_racs"'
+cmd_del2='delcols "Z_PIPE_o1_first Z_PIPE_o1_nvss Z_PIPE_o1_gleam Z_PIPE_o1_racs"'
+cmd_del3='delcols "Z_VI_o1_first Z_VI_o1_nvss Z_VI_o1_gleam Z_VI_o1_racs"'
+cmd_del4='delcols "SOURCE_Z_o1_first SOURCE_Z_o1_nvss SOURCE_Z_o1_gleam SOURCE_Z_o1_racs"'
+cmd_del5='delcols "Z_o1_first Z_o1_nvss Z_o1_gleam Z_o1_racs"'
+cmd_del6='delcols "DEC_o1_first DEC_o1_nvss DEC_o1_gleam DEC_o1_racs"'
+cmd_del7='delcols "RA_o1_first RA_o1_nvss RA_o1_gleam RA_o1_racs"'
+cmd_del8='delcols "SDSS_NAME_o1_first SDSS_NAME_o1_nvss SDSS_NAME_o1_gleam SDSS_NAME_o1_racs"'
+# select the raws based on the non-null values of their tiers
+cmd_selection='select "!NULL_source_tier_first || !NULL_source_tier_nvss || !NULL_source_tier_gleam || !NULL_source_tier_racs"'
+# 4.2 the main tpipe run for this
 java -jar $stilts_dir tpipe \
-    in=temp_with_gcount.fits \
-    cmd='addcol GroupID "!NULL_GroupID_1 ? GroupID_1 : NULL"' \
-    cmd='delcols GroupID_2' \
-    cmd='delcols GroupID_1' \
-    out=temp_with_gcount.fits
-exit
+    in="${TEMP_DIR}/match1_o1r1234.fits" \
+    cmd="$cmd_cmob1" cmd="$cmd_cmob2" cmd="$cmd_cmob3" cmd="$cmd_cmob4" \
+    cmd="$cmd_comb5" cmd="$cmd_comb6" cmd="$cmd_comb7" cmd="$cmd_comb8" \
+    cmd="$cmd_del1" cmd="$cmd_del2" cmd="$cmd_del3" cmd="$cmd_del4" \
+    cmd="$cmd_del5" cmd="$cmd_del6" cmd="$cmd_del7" cmd="$cmd_del8" \
+    cmd="$cmd_selection" \
+    out="${TEMP_DIR}/matched_o1r1234_total_highz.fits"
 
-#Note, if you don't specify the !NULL option, stilts will treat the ELSE condition (when GroupCount is NULL) as NULL, so it will give GroupSize = NULL rather than keeping the original GroupSize value.
-rpl_cmd='replacecol GroupSize "!NULL_GroupCount && GroupCount == 1 ? 1 : GroupSize"'
-# This may overlappipng with the previous command, but it is necessary to ensure that GroupSize is set to 1 for singleton groups.
-rpl_cmd2='replaceval NULL 1 "GroupSize"'
-java -jar $stilts_dir tpipe ifmt=fits \
-    in=temp_with_gcount.fits \
-    cmd="$rpl_cmd" \
-    cmd="$rpl_cmd2" \
-    out=filtered_r1_CLN.fits
+# 5. Now make the final catalogue for the matched high-z sources
+# 5.1 Define the columns to keep in the final catalogue
+Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z \
+                      source_tier_first FIRST_r1 Fpeak_r1 Fint_r1 Rms_r1 \
+                      source_tier_nvss NVSS_r2 S1.4_r2 e_S1.4_r2 \
+                      source_tier_gleam GLEAM_r3 Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
+                      source_tier_racs RACS-DR1_r4 Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
-# 3. Flag the high-z and single matched sources as tier 1
 
-flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
-# flag_cmd2='replacecol source_tier "source_tier == 0 && "
-java -jar $stilts_dir tpipe ifmt=fits in=filtered_r1_CLN.fits \
-    cmd="$flag_cmd1" \
-    out=mr1_t1.fits
+cmds_rename=""
+for i in "${!columns[@]}"; do
+    col=${columns[$i]}
+    new_col=${new_columns[$i]}
+    cmds_rename+='colmeta -name "'${new_col}'" "'${col}'"'
+    # echo "Doing rename useing colmeta -name \"${new_col}\" \"${col}\""
+    # cmds_rename+="addcol -before $1 ${new_col} \"!NULL_${col} ? ${col} : NULL\" "
+done
+echo "cmds_rename: $cmds_rename"
+
+selection_final='select "sdss_z >=3"'
+java -jar $stilts_dir tpipe \
+    in="${TEMP_DIR}/match1_o1r1234_total_highz.fits" \
+    cmd="$Cols_final" \
+    cmd="$selection_final" \
+    out="${TEMP_DIR}/final_matched_highz_catalogue.fits"
+echo "Final catalogue created at: ${TEMP_DIR}/final_matched_highz_catalogue.fits"
 
 exit
 
