@@ -19,9 +19,9 @@ In the southern sky:
 
 Survey catalogue information:
 ++++++++++++++++++++++++++++++++++++++++++Redshifts+++++++++++++++++++++++++++++++++++++++++++++++++++++
-First I use Half Million Quasar (Flesch 2015,) to get quasar redshift, it include the following catalogues:
+Some potiential catalogues that can be used for redshifts
 -  SDSS quasar catalogue till DR12 (Paris et al. 2017)	2017A&A...597A..79P
-
+-  Half Million Quasar (Flesch 2015)
 other high-z surveys after Flesch 2015 to check:
 - Dark Energy hi-z, Reed S.L. et al., 2015MNRAS.454.3952R--OzDES:2017MNRAS.472..273C []
 - DECaLS-UKIRT hi-z, Wang F. et al., 2017ApJ...839...27W (see citations) []
