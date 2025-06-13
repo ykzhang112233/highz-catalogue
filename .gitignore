@@ -1,2 +1,4 @@
 # Dont save whole catalogues
 *.fits
+*.log
+*.ipynb_checkpoints
