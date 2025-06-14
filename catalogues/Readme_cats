@@ -7,17 +7,17 @@ This folder contains the .fits cataluges that used for the cross-matching.
 
 ### **Radio catalogues**
 In the northern sky:
-- NVSS (Condon et al. 1998, Cat. VIII/65)
-- FIRST (Becker et al. 1995, Cat. VIII/71)
+- NVSS (Condon et al. 1998, Cat. VIII/65/nvss)
+- FIRST (Becker et al. 1997, Cat. VIII/92/first14)
 <!-- - TGSS (Intema et al. 2017, Cat. VIII/100)
 - VLSS (Cohen et al. 2007, Cat. VIII/100)
 - VLSSr (Lane et al. 2014, Cat. VIII/100) -->
 
 In the southern sky:
-- GLEAM 
-- RACS (Hale et al. 2021, Cat. J/MNRAS/501/3000)
+- GLEAM (Hurley-Walker+2017, Cat. VIII/100/gleamegc)
+- RACS (Hale et al. 2021, Cat. J/other/PASA/38.58)
 
-Survey catalogue information:
+Other Survey catalogue information:
 ++++++++++++++++++++++++++++++++++++++++++Redshifts+++++++++++++++++++++++++++++++++++++++++++++++++++++
 Some potiential catalogues that can be used for redshifts
 -  SDSS quasar catalogue till DR12 (Paris et al. 2017)	2017A&A...597A..79P
@@ -33,7 +33,7 @@ other high-z surveys after Flesch 2015 to check:
 - Hi-z QSOs from WISE, Wang F. et al.,2016, Cat. J/ApJ/819/24
 
 ++++++++++++++++++++++++++++++++++++++cross-match radius++++++++++++++++++++++++++++++++++++++++++++++++
-
+<!-- This is out of date -->
 gleam synth beam 210-93",searching radius can be reduced to 100"(at most), and individual cases can be judged through catalogue PSF values.
 Callingham used an angular cutoff of 2′20′′(70" in radius), which is approximately the FWHM of the MWA beam in the wideband image
 nvss beam 45"
