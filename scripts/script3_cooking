@@ -49,7 +49,7 @@ for i in "${!radio_cats[@]}"; do
     out_file="mr${num}_t123.fits"
 
     echo "Processing ${radio_cat} with PSF Maj: $psfmaj and PSF Min: $psfmin"
-    selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}) || (${psfmin} != 0 && Separation < ${psfmin})\""
+    selection1="select \"(${psfmin} == 0 && ${psfmaj} == 0) || (${psfmin} == 0 && ${psfmaj} !=0 && Separation < ${psfmaj}/2) || (${psfmin} != 0 && Separation < ${psfmin}/2)\""
     echo "do $selection1"
     java -jar $stilts_dir tpipe ifmt=fits in="${radio_cat}" \
         cmd="$selection1" \
