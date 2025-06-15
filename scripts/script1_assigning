@@ -88,4 +88,5 @@ java -jar $stilts_dir tpipe ifmt=fits "$RACScat" \
                             cmd="$Cols_racs" \
                             out=tmp_racs.fits
 
+echo "If you are starting from the tmp fits files, you can ignore the above errors"
 exit
