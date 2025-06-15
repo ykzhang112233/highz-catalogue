@@ -85,18 +85,22 @@ for i in "${!radio_cats[@]}"; do
         cmd='addcol GroupSize "GroupSize_1"' \
         cmd='delcols GroupSize_1' \
         out="temp_with_gcount_r${num}.fits"
-# in this stes, we want to make GroupSize =1 where the new filtered by distance makes some sources become single. For Gsizes>1 (after filter by distanced).
-# just keep their orignial sizes 
+# in this step, we have both GroupSize and GroupCount, they are kinda ovarlapping but should be different.
+# GroupCount is the size of the group after filtering by distance, while GroupSize is the original size of the group before filtering.
+# We can make them more clear by renaming them, GrpSize_before is for old GroupSize and Groupsize is from GroupCount for further use
     rpl_cmd1='replaceval NULL 1 "GroupSize"'
     rpl_cmd2='replaceval NULL 1 "GroupCount"'
-    rpl_cmd3='replacecol GroupSize "GroupCount == 1 ? 1 : GroupSize"'
+    rpl_cmd3='replacecol GroupSize "GroupCount"'
     java -jar $stilts_dir tpipe ifmt=fits \
         in="temp_with_gcount_r${num}.fits" \
         cmd="$rpl_cmd1" \
         cmd="$rpl_cmd2" \
+        cmd='addcol GrpSize_before "GroupSize"' \
         cmd="$rpl_cmd3" \
+        cmd='delcols "GroupCount"' \
         out="${fits_temp}"
-    echo "Filtered ${radio_cat} to ${fits_temp} with GroupSize adjusted for Tier1 sources. (3/5)"
+    echo "Filtered ${radio_cat} to ${fits_temp} with GroupSize adjusted to GroupCount for Tier1 sources. (3/5)"
+
 
     # 4. begin looking for tier2 and tier3 sources (grouped source with all z>3 (tier2) or one of them z>3 (tier3))
     java -jar $stilts_dir tgroup \
@@ -138,10 +142,10 @@ for i in "${!radio_cats[@]}"; do
     fi
     
     # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with one highz)
-    # use 2.7 give a tolerance for the group_z_min, so that we can include the sources within an error of 10% in tier3
+    # use 2.7 give a tolerance for the group_z_min, so that we can include the sources within an error of 5% (0.15) in tier2 and tier3
     flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
-    flag_cmd2='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min >= 3 ? 2 : source_tier"'
-    flag_cmd3='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min <= 2.7 && Z_o1>=3 ? 3 : source_tier"'
+    flag_cmd2='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min >= 2.85 ? 2 : source_tier"'
+    flag_cmd3='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min < 2.85 && Z_o1>=3 ? 3 : source_tier"'
     # flag_cmd2='replacecol source_tier "source_tier == 0 &&  "
     java -jar $stilts_dir tpipe ifmt=fits in="groups_${fits_temp}" \
         cmd="$flag_cmd1" \
