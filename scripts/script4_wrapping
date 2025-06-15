@@ -34,6 +34,7 @@ matched_r4="${TEMP_DIR}/mr4_t123.fits"  # matched radio catalogue4
 
 java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
     in1="${matched_r1}" in2="${matched_r2}" in3="${matched_r3}" in4="${matched_r4}" \
+    join1="always" join2="always" join3="always" join4="always" \
     values1='SDSS_NAME_o1' values2='SDSS_NAME_o1' values3='SDSS_NAME_o1' values4='SDSS_NAME_o1' \
     suffix1='_first' suffix2='_nvss' suffix3='_gleam' suffix4='_racs' \
     fixcols='dups' \
@@ -72,10 +73,10 @@ java -jar $stilts_dir tpipe \
 # 5. Now make the final catalogue for the matched high-z sources
 # 5.1 Define the columns to keep in the final catalogue
 Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z \
-                      source_tier_first FIRST_r1 Fpeak_r1 Fint_r1 Rms_r1 \
-                      source_tier_nvss NVSS_r2 S1.4_r2 e_S1.4_r2 \
-                      source_tier_gleam GLEAM_r3 Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
-                      source_tier_racs RACS-DR1_r4 Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
+                      FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
+                      NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
+                      GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
+                      RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
 
 cmds_rename=""
@@ -88,7 +89,11 @@ for i in "${!columns[@]}"; do
 done
 echo "cmds_rename: $cmds_rename"
 
-selection_final='select "sdss_z >=3"'
+# selection_final='select "sdss_z >=3"'
+selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
+                        (!NULL_source_tier_nvss && source_tier_nvss > 0) ||
+                        (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
+                        (!NULL_source_tier_racs && source_tier_racs > 0)"'
 java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/matched_o1r1234_total_highz.fits" \
     cmd="$Cols_final" \
