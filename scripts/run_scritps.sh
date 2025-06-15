@@ -21,7 +21,7 @@ cat script1.log script2.log script3.log script4.log > "$logfile"
 # Clean up individual log files
 rm script1.log script2.log script3.log script4.log
 # clean up temporary files, if you want to check the intermediate files, you can comment the following line
-# rm -f fileterd*.fits group*.fits match1_*.fits mr*.fits temp_with*.fits filtered_* singleton_* # tmp_*
+rm -f fileterd*.fits group*.fits match1_*.fits mr*.fits temp_with*.fits filtered_* singleton_* # tmp_*
 
 # Rename columns and export the final catalogue as a csv file using the simple python script
 python make_cat.py 
