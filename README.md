@@ -1,4 +1,4 @@
-# high-z_catalogue
+# High-z_catalogue
 ## Author info
 - Author: 	Yingkang Zhang
 - E-Mail: 	ykzhang@shao.ac.cn
