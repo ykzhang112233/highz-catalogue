@@ -2,3 +2,4 @@
 *.fits
 *.log
 *.ipynb_checkpoints
+scripts/ref*
