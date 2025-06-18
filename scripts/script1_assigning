@@ -45,7 +45,7 @@ echo "SDSSdr16q: $SDSSdr16q"
 # RACScat="tmp_racs.fits"
 ############################################################
 ## 3. compress the sdss catalogue ##########################
-Cols_SDSSdr16q='keepcols "SDSS_NAME RA DEC IS_QSO_QN Z_QN Z SOURCE_Z Z_PIPE Z_VI Z_CONF Z_PCA \
+Cols_SDSSdr16q='keepcols "SDSS_NAME RA DEC IS_QSO_QN Z_QN Z SOURCE_Z Z_PIPE Z_VI Z_CONF \
                           GALEX_MATCHED UKIDSS_MATCHED FIRST_MATCHED SDSS2FIRST_SEP SDSS2MASS_SEP \
                           2RXS_ID SDSS2ROSAT_SEP XMM_SRC_ID SDSS2XMM_SEP GAIA_MATCHED"'
 
