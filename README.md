@@ -12,7 +12,7 @@ We generate this catalogue that contains the most comprehensive cross-matching a
 Update time: 2025-06-01
 
 Just some bash and STILTS scripts (a little bit python) on a comprehensive cross-matching to look for high-z radio quasars.
-The STILTS scripts are used to do the cross-matching (see `/scripts` for details).
+The STILTS scripts are used to do the cross-matching (see image for preview and script codes in `/scripts` for details).
 
 Catalogues used (see /catalogues for details): 
 - SDSS dr16q (2020ApJS..250....8L)
@@ -21,6 +21,7 @@ Catalogues used (see /catalogues for details):
 - GLEAM (2017MNRAS.464.1146H)
 - RACS (2021PASA...38...58H)
 
+![Figure 1](./highz_flowchartv2.png)
 ## Usage
 - First, download this repo to your device and untar.
 - Download the catalogues above (via TOPCAT or other sources of database, save as `.fits` format) and place them in the `/catalogues`
@@ -40,9 +41,9 @@ Catalogues used (see /catalogues for details):
   1. The run_scripts.log stores the logs that generagted during the , just check it after the run to see if there are erros. If no errors for the processing then you should get the fllowing outputs.
   2. The final catalogue `final_matched_highz_catalogue` in `.csv` format, in the basic directory. And the `.fits` catalogue in the `/scripts` directory.
   3. Catalogues that can be used to check results:
-    - The `sdss_z_over3.csv` in base dir that showing all optical quasars with redshift > 3
+    - The `sdss_z_over3.csv` in base dir that showing all optical quasars with redshift > 3.
     - The `matched_o1r1234_total_highz.fits` in the `/scripts` directory which keeps most columns during the matching for you to check.
-    - If you want to further check the process, you can comment out line 24 (the `rm *` line) in the `run_scripts` then you can find every temp files during the matching.s
+    - If you want to further check the process, you can comment out line 24 (the `rm *` line) in the `run_scripts` then you can find every temp files during the matching.
 
 Please contact the author if you have any questions.
 
