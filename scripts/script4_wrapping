@@ -68,7 +68,7 @@ java -jar $stilts_dir tpipe \
     cmd="$cmd_del1" cmd="$cmd_del2" cmd="$cmd_del3" cmd="$cmd_del4" \
     cmd="$cmd_del5" cmd="$cmd_del6" cmd="$cmd_del7" cmd="$cmd_del8" \
     cmd="$cmd_selection" \
-    out="${TEMP_DIR}/matched_o1r1234_total_highz.fits"
+    out="${TEMP_DIR}/matched_o1r1234_total.fits"
 
 # 5. Now make the final catalogue for the matched high-z sources
 # 5.1 Define the columns to keep in the final catalogue
@@ -95,7 +95,7 @@ selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
                         (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
                         (!NULL_source_tier_racs && source_tier_racs > 0)"'
 java -jar $stilts_dir tpipe \
-    in="${TEMP_DIR}/matched_o1r1234_total_highz.fits" \
+    in="${TEMP_DIR}/matched_o1r1234_total.fits" \
     cmd="$Cols_final" \
     cmd="$selection_final" \
     out="${TEMP_DIR}/final_matched_highz_catalogue.fits"
