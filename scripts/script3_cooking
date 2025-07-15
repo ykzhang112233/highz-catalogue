@@ -37,8 +37,8 @@ matched_r4="${TEMP_DIR}/match1_o1r4.fits"  # matched radio catalogue4
 # raidus_o1r4=15  # RACS 25"
 # 1. Filter by distance
 radio_cats=("${matched_r1}" "${matched_r2}" "${matched_r3}" "${matched_r4}")
-psfmajs=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj_r4")
-psfmins=("Min_r1" "MinAxis_r2" "psfbwide_r3" "bmin_r4")
+psfmajs=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj0_r4")
+psfmins=("Min_r1" "MinAxis_r2" "psfbwide_r3" "bmin0_r4")
 
 for i in "${!radio_cats[@]}"; do
     num=$(($i + 1))
@@ -142,7 +142,7 @@ for i in "${!radio_cats[@]}"; do
     fi
     
     # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with one highz)
-    # use 2.7 give a tolerance for the group_z_min, so that we can include the sources within an error of 5% (0.15) in tier2 and tier3
+    # use 2.85 give a tolerance for the group_z_min, so that we can include the sources within an error of 5% (0.15) in tier2 and tier3
     flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : 0"'
     flag_cmd2='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min >= 2.85 ? 2 : source_tier"'
     flag_cmd3='replacecol source_tier "source_tier == 0 && !NULL_group_z_min && group_z_min < 2.85 && Z_o1>=3 ? 3 : source_tier"'

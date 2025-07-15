@@ -37,7 +37,7 @@ GLEAMcat="${CAT_DIR}/gleam_full.fits"
 RACScat="${CAT_DIR}/racs1.fits"
 echo "SDSSdr16q: $SDSSdr16q"
 
-# if you want to start from the tmp fits files rather than the original catalogues, you can uncomment the following lines and comment the above lines
+# if you want to start from the tmp fits files rather than the original catalogues (i.e. start from script2), you can uncomment the following lines and comment the above lines
 # This is useful if you work on different machines and do not have the original catalogues in other machines, just the tmp files can be stored in the git repository
 # FIRSTcat="tmp_first.fits"
 # NVSScat="tmp_nvss.fits"
@@ -45,9 +45,8 @@ echo "SDSSdr16q: $SDSSdr16q"
 # RACScat="tmp_racs.fits"
 ############################################################
 ## 3. compress the sdss catalogue ##########################
-Cols_SDSSdr16q='keepcols "SDSS_NAME RA DEC IS_QSO_QN Z_QN Z SOURCE_Z Z_PIPE Z_VI Z_CONF \
-                          GALEX_MATCHED UKIDSS_MATCHED FIRST_MATCHED SDSS2FIRST_SEP SDSS2MASS_SEP \
-                          2RXS_ID SDSS2ROSAT_SEP XMM_SRC_ID SDSS2XMM_SEP GAIA_MATCHED"'
+Cols_SDSSdr16q='keepcols "SDSS_NAME RA DEC Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF \
+                          IS_QSO_QN Z_QN Z_10K Z_CONF_10K Z_PCA ZWARN_PCA"'
 
 java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" cmd="$Cols_SDSSdr16q" out=tmp_sdss.fits
 java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
@@ -68,8 +67,9 @@ Cols_nvss='keepcols "NVSS RA_deg e_RAJ2000 DEC_deg e_DEJ2000 S1.4 e_S1.4 MajAxis
 Cols_gleam='keepcols "GLEAM RA_deg e_RAJ2000 DEC_deg e_DEJ2000 Fpwide e_Fpwide Fintwide e_Fintwide \
                       awide e_awide bwide e_bwide pawide psfawide psfbwide psfPAwide"'
 
-Cols_racs='keepcols "RACS-DR1 RA_deg e_RAJ2000 DEC_deg e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA"'
-
+Cols_racs='keepcols "RACS-DR1 RA_deg e_RAJ2000 DEC_deg e_DEJ2000 Ftot e_Ftot Fpk e_Fpk amaj bmin e_amaj e_bmin PA e_PA amaj0 bmin0 PA0 \
+                      e_amaj0 e_bmin0 e_PA0"'
+                     
 java -jar $stilts_dir tpipe ifmt=fits "$FIRSTcat" \
                             cmd="$sex_to_deg" \
                             cmd="$Cols_first14" \
