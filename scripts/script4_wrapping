@@ -5,7 +5,7 @@
 ###########################################
 ##### 1. Init ##### 
 clear
-
+# set -x
 # Get Directory where script is located
 # BASEDIR is the directory where the script is located; CAT_DIR is the directory where the catalogues are located
 BASEDIR=$(dirname "$0")
@@ -47,17 +47,17 @@ java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
 generate_stilts_cmds() {
     # 倒序列名（先手动写好）
     cols=(ZWARN_PCA Z_PCA Z_CONF_10K Z_10K Z_QN IS_QSO_QN Z_CONF Z_VI ZWARNING Z_PIPE SOURCE_Z Z DEC RA SDSS_NAME)
-
-    index=1  # 从 cmd_comb1 开始
-    for col in "${cols[@]:2}"; do
+    new_columns=(sdss_zwarn_pca sdss_z_pca sdss_z_conf_10k sdss_z_10k sdss_z_qn sdss_is_qso_qn sdss_z_conf sdss_z_vi sdss_zwarning sdss_z_pipe sdss_source_z sdss_z sdss_dec sdss_ra sdss_name)
+    index=0  # 从 cmd_comb1 开始
+    for col in "${cols[@]}"; do
         # 构造替代表达式
         expr="!NULL_${col}_o1_first ? ${col}_o1_first : (!NULL_${col}_o1_nvss ? ${col}_o1_nvss : (!NULL_${col}_o1_gleam ? ${col}_o1_gleam : ${col}_o1_racs))"
 
         # 构造 addcol 命令
-        echo "cmd_comb${index}='addcol -before \$1 ${col,,} \"$expr\"'"
+        echo "cmd_comb$((index+1))='addcol -before \$1 ${new_columns[$index]} \"$expr\"'"
 
         # 构造 delcols 命令
-        echo "cmd_del${index}='delcols \"${col}_o1_first ${col}_o1_nvss ${col}_o1_gleam ${col}_o1_racs\"'"
+        echo "cmd_del$((index+1))='delcols \"${col}_o1_first ${col}_o1_nvss ${col}_o1_gleam ${col}_o1_racs\"'"
 
         ((index++))
     done
@@ -72,6 +72,8 @@ generate_stilts_cmds() {
 # cmd_comb6='addcol -before $1 sdss_dec "!NULL_DEC_o1_first ? DEC_o1_first : (!NULL_DEC_o1_nvss ? DEC_o1_nvss : (!NULL_DEC_o1_gleam ? DEC_o1_gleam : DEC_o1_racs))"'
 # cmd_comb14='addcol -before $1 sdss_ra "!NULL_RA_o1_first ? RA_o1_first : (!NULL_RA_o1_nvss ? RA_o1_nvss : (!NULL_RA_o1_gleam ? RA_o1_gleam : RA_o1_racs))"'
 # cmd_comb15='addcol -before $1 sdss_name "!NULL_SDSS_NAME_o1_first ? SDSS_NAME_o1_first : (!NULL_SDSS_NAME_o1_nvss ? SDSS_NAME_o1_nvss : (!NULL_SDSS_NAME_o1_gleam ? SDSS_NAME_o1_gleam : SDSS_NAME_o1_racs))"'
+# cmd_comb13='addcol -before $1 sdss_ra "!NULL_SDSS_NAME_o1_first ? SDSS_NAME_o1_first : (!NULL_SDSS_NAME_o1_nvss ? SDSS_NAME_o1_nvss : (!NULL_SDSS_NAME_o1_gleam ? SDSS_NAME_o1_gleam : SDSS_NAME_o1_racs))"'
+# cmd_del13='delcols "SDSS_NAME_o1_first SDSS_NAME_o1_nvss SDSS_NAME_o1_gleam SDSS_NAME_o1_racs"'
 # # command for deleting the original columns
 # cmd_del1='delcols "Z_CONF_o1_first Z_CONF_o1_nvss Z_CONF_o1_gleam Z_CONF_o1_racs"'
 # cmd_del2='delcols "Z_PIPE_o1_first Z_PIPE_o1_nvss Z_PIPE_o1_gleam Z_PIPE_o1_racs"'
@@ -82,7 +84,7 @@ generate_stilts_cmds() {
 # cmd_del14='delcols "RA_o1_first RA_o1_nvss RA_o1_gleam RA_o1_racs"'
 # cmd_del15='delcols "SDSS_NAME_o1_first SDSS_NAME_o1_nvss SDSS_NAME_o1_gleam SDSS_NAME_o1_racs"'
 # generate the commands for combining and deleting columns
-generate_stilts_cmds
+eval "$(generate_stilts_cmds)"
 # select the raws based on the non-null values of their tiers
 cmd_selection='select "!NULL_source_tier_first || !NULL_source_tier_nvss || !NULL_source_tier_gleam || !NULL_source_tier_racs"'
 # 4.2 the main tpipe run for this
@@ -108,15 +110,15 @@ Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z \
                       RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
 
-cmds_rename=""
-for i in "${!columns[@]}"; do
-    col=${columns[$i]}
-    new_col=${new_columns[$i]}
-    cmds_rename+='colmeta -name "'${new_col}'" "'${col}'"'
-    # echo "Doing rename useing colmeta -name \"${new_col}\" \"${col}\""
-    # cmds_rename+="addcol -before $1 ${new_col} \"!NULL_${col} ? ${col} : NULL\" "
-done
-echo "cmds_rename: $cmds_rename"
+# cmds_rename=""
+# for i in "${!columns[@]}"; do
+#     col=${columns[$i]}
+#     new_col=${new_columns[$i]}
+#     cmds_rename+='colmeta -name "'${new_col}'" "'${col}'"'
+#     # echo "Doing rename useing colmeta -name \"${new_col}\" \"${col}\""
+#     # cmds_rename+="addcol -before $1 ${new_col} \"!NULL_${col} ? ${col} : NULL\" "
+# done
+# echo "cmds_rename: $cmds_rename"
 
 # selection_final='select "sdss_z >=3"'
 selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
