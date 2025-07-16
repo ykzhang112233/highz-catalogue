@@ -1,6 +1,7 @@
 # Just some utility functions to make the output catalogue more hunman-readable.
 import pandas as pd
 from astropy.io import fits
+import numpy as np
 
 
 # read the fits file and convert it to a Pandas DataFrame
@@ -24,7 +25,7 @@ new_columns = [
     "Fpk_racs", "e_Fpk_racs", "Ftot_racs", "e_Ftot_racs"
 ]
 df.rename(columns={old: new for old, new in zip(columns, new_columns)}, inplace=True)
-
+df.replace(-32768, np.nan, inplace=True)
 df.to_csv('../final_matched_highz_catalogue.csv', index=False)
 
 #Usage example:
