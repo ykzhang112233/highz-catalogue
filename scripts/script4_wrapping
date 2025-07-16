@@ -41,23 +41,48 @@ java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
     out="${TEMP_DIR}/match1_o1r1234.fits"
 # 4 check the columns in the grouped catalogue and make unified optical columns
 ## 4.1 Based on the grouped catalogue, combine the optical columns and output as a _total catalogue for referencing
-cmd_cmob1='addcol -before $1 sdss_zconf "!NULL_Z_CONF_o1_first ? Z_CONF_o1_first : (!NULL_Z_CONF_o1_nvss ? Z_CONF_o1_nvss : (!NULL_Z_CONF_o1_gleam ? Z_CONF_o1_gleam : Z_CONF_o1_racs))"'
-cmd_cmob2='addcol -before $1 sdss_zpipe "!NULL_Z_PIPE_o1_first ? Z_PIPE_o1_first : (!NULL_Z_PIPE_o1_nvss ? Z_PIPE_o1_nvss : (!NULL_Z_PIPE_o1_gleam ? Z_PIPE_o1_gleam : Z_PIPE_o1_racs))"'
-cmd_cmob3='addcol -before $1 sdss_zvi "!NULL_Z_VI_o1_first ? Z_VI_o1_first : (!NULL_Z_VI_o1_nvss ? Z_VI_o1_nvss : (!NULL_Z_VI_o1_gleam ? Z_VI_o1_gleam : Z_VI_o1_racs))"'
-cmd_cmob4='addcol -before $1 sdss_source_z "!NULL_SOURCE_Z_o1_first ? SOURCE_Z_o1_first : (!NULL_SOURCE_Z_o1_nvss ? SOURCE_Z_o1_nvss : (!NULL_SOURCE_Z_o1_gleam ? SOURCE_Z_o1_gleam : SOURCE_Z_o1_racs))"'
-cmd_comb5='addcol -before $1 sdss_z "!NULL_Z_o1_first ? Z_o1_first : (!NULL_Z_o1_nvss ? Z_o1_nvss : (!NULL_Z_o1_gleam ? Z_o1_gleam : Z_o1_racs))"'
-cmd_comb6='addcol -before $1 sdss_dec "!NULL_DEC_o1_first ? DEC_o1_first : (!NULL_DEC_o1_nvss ? DEC_o1_nvss : (!NULL_DEC_o1_gleam ? DEC_o1_gleam : DEC_o1_racs))"'
-cmd_comb7='addcol -before $1 sdss_ra "!NULL_RA_o1_first ? RA_o1_first : (!NULL_RA_o1_nvss ? RA_o1_nvss : (!NULL_RA_o1_gleam ? RA_o1_gleam : RA_o1_racs))"'
-cmd_comb8='addcol -before $1 sdss_name "!NULL_SDSS_NAME_o1_first ? SDSS_NAME_o1_first : (!NULL_SDSS_NAME_o1_nvss ? SDSS_NAME_o1_nvss : (!NULL_SDSS_NAME_o1_gleam ? SDSS_NAME_o1_gleam : SDSS_NAME_o1_racs))"'
-# command for deleting the original columns
-cmd_del1='delcols "Z_CONF_o1_first Z_CONF_o1_nvss Z_CONF_o1_gleam Z_CONF_o1_racs"'
-cmd_del2='delcols "Z_PIPE_o1_first Z_PIPE_o1_nvss Z_PIPE_o1_gleam Z_PIPE_o1_racs"'
-cmd_del3='delcols "Z_VI_o1_first Z_VI_o1_nvss Z_VI_o1_gleam Z_VI_o1_racs"'
-cmd_del4='delcols "SOURCE_Z_o1_first SOURCE_Z_o1_nvss SOURCE_Z_o1_gleam SOURCE_Z_o1_racs"'
-cmd_del5='delcols "Z_o1_first Z_o1_nvss Z_o1_gleam Z_o1_racs"'
-cmd_del6='delcols "DEC_o1_first DEC_o1_nvss DEC_o1_gleam DEC_o1_racs"'
-cmd_del7='delcols "RA_o1_first RA_o1_nvss RA_o1_gleam RA_o1_racs"'
-cmd_del8='delcols "SDSS_NAME_o1_first SDSS_NAME_o1_nvss SDSS_NAME_o1_gleam SDSS_NAME_o1_racs"'
+### for the following col names which are duplicated in the grouped catalogue, we will combine them into one column: 
+### inverse order of "SDSS_NAME RA DEC Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF IS_QSO_QN Z_QN Z_10K Z_CONF_10K Z_PCA ZWARN_PCA"
+
+generate_stilts_cmds() {
+    # 倒序列名（先手动写好）
+    cols=(ZWARN_PCA Z_PCA Z_CONF_10K Z_10K Z_QN IS_QSO_QN Z_CONF Z_VI ZWARNING Z_PIPE SOURCE_Z Z DEC RA SDSS_NAME)
+
+    index=1  # 从 cmd_comb1 开始
+    for col in "${cols[@]:2}"; do
+        # 构造替代表达式
+        expr="!NULL_${col}_o1_first ? ${col}_o1_first : (!NULL_${col}_o1_nvss ? ${col}_o1_nvss : (!NULL_${col}_o1_gleam ? ${col}_o1_gleam : ${col}_o1_racs))"
+
+        # 构造 addcol 命令
+        echo "cmd_comb${index}='addcol -before \$1 ${col,,} \"$expr\"'"
+
+        # 构造 delcols 命令
+        echo "cmd_del${index}='delcols \"${col}_o1_first ${col}_o1_nvss ${col}_o1_gleam ${col}_o1_racs\"'"
+
+        ((index++))
+    done
+}
+# # commands to combine the columns
+# cmd_cmob1='addcol -before $1 sdss_zconf "!NULL_Z_CONF_o1_first ? Z_CONF_o1_first : (!NULL_Z_CONF_o1_nvss ? Z_CONF_o1_nvss : (!NULL_Z_CONF_o1_gleam ? Z_CONF_o1_gleam : Z_CONF_o1_racs))"'
+# cmd_cmob3='addcol -before $1 sdss_zvi "!NULL_Z_VI_o1_first ? Z_VI_o1_first : (!NULL_Z_VI_o1_nvss ? Z_VI_o1_nvss : (!NULL_Z_VI_o1_gleam ? Z_VI_o1_gleam : Z_VI_o1_racs))"'
+# cmd_cmobx='addcol -before $1 sdss_zwarning "!NULL_ZWARNING_o1_first ? ZWARNING_o1_first : (!NULL_ZWARNING_o1_nvss ? ZWARNING_o1_nvss : (!NULL_ZWARNING_o1_gleam ? ZWARNING_o1_gleam : ZWARNING_o1_racs))"'
+# cmd_cmob2='addcol -before $1 sdss_zpipe "!NULL_Z_PIPE_o1_first ? Z_PIPE_o1_first : (!NULL_Z_PIPE_o1_nvss ? Z_PIPE_o1_nvss : (!NULL_Z_PIPE_o1_gleam ? Z_PIPE_o1_gleam : Z_PIPE_o1_racs))"'
+# cmd_cmob4='addcol -before $1 sdss_source_z "!NULL_SOURCE_Z_o1_first ? SOURCE_Z_o1_first : (!NULL_SOURCE_Z_o1_nvss ? SOURCE_Z_o1_nvss : (!NULL_SOURCE_Z_o1_gleam ? SOURCE_Z_o1_gleam : SOURCE_Z_o1_racs))"'
+# cmd_comb5='addcol -before $1 sdss_z "!NULL_Z_o1_first ? Z_o1_first : (!NULL_Z_o1_nvss ? Z_o1_nvss : (!NULL_Z_o1_gleam ? Z_o1_gleam : Z_o1_racs))"'
+# cmd_comb6='addcol -before $1 sdss_dec "!NULL_DEC_o1_first ? DEC_o1_first : (!NULL_DEC_o1_nvss ? DEC_o1_nvss : (!NULL_DEC_o1_gleam ? DEC_o1_gleam : DEC_o1_racs))"'
+# cmd_comb14='addcol -before $1 sdss_ra "!NULL_RA_o1_first ? RA_o1_first : (!NULL_RA_o1_nvss ? RA_o1_nvss : (!NULL_RA_o1_gleam ? RA_o1_gleam : RA_o1_racs))"'
+# cmd_comb15='addcol -before $1 sdss_name "!NULL_SDSS_NAME_o1_first ? SDSS_NAME_o1_first : (!NULL_SDSS_NAME_o1_nvss ? SDSS_NAME_o1_nvss : (!NULL_SDSS_NAME_o1_gleam ? SDSS_NAME_o1_gleam : SDSS_NAME_o1_racs))"'
+# # command for deleting the original columns
+# cmd_del1='delcols "Z_CONF_o1_first Z_CONF_o1_nvss Z_CONF_o1_gleam Z_CONF_o1_racs"'
+# cmd_del2='delcols "Z_PIPE_o1_first Z_PIPE_o1_nvss Z_PIPE_o1_gleam Z_PIPE_o1_racs"'
+# cmd_del3='delcols "Z_VI_o1_first Z_VI_o1_nvss Z_VI_o1_gleam Z_VI_o1_racs"'
+# cmd_del4='delcols "SOURCE_Z_o1_first SOURCE_Z_o1_nvss SOURCE_Z_o1_gleam SOURCE_Z_o1_racs"'
+# cmd_del5='delcols "Z_o1_first Z_o1_nvss Z_o1_gleam Z_o1_racs"'
+# cmd_del6='delcols "DEC_o1_first DEC_o1_nvss DEC_o1_gleam DEC_o1_racs"'
+# cmd_del14='delcols "RA_o1_first RA_o1_nvss RA_o1_gleam RA_o1_racs"'
+# cmd_del15='delcols "SDSS_NAME_o1_first SDSS_NAME_o1_nvss SDSS_NAME_o1_gleam SDSS_NAME_o1_racs"'
+# generate the commands for combining and deleting columns
+generate_stilts_cmds
 # select the raws based on the non-null values of their tiers
 cmd_selection='select "!NULL_source_tier_first || !NULL_source_tier_nvss || !NULL_source_tier_gleam || !NULL_source_tier_racs"'
 # 4.2 the main tpipe run for this
@@ -65,8 +90,12 @@ java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/match1_o1r1234.fits" \
     cmd="$cmd_cmob1" cmd="$cmd_cmob2" cmd="$cmd_cmob3" cmd="$cmd_cmob4" \
     cmd="$cmd_comb5" cmd="$cmd_comb6" cmd="$cmd_comb7" cmd="$cmd_comb8" \
+    cmd="$cmd_comb9" cmd="$cmd_comb10" cmd="$cmd_comb11" cmd="$cmd_comb12" \
+    cmd="$cmd_comb13" cmd="$cmd_comb14" cmd="$cmd_comb15" \
     cmd="$cmd_del1" cmd="$cmd_del2" cmd="$cmd_del3" cmd="$cmd_del4" \
     cmd="$cmd_del5" cmd="$cmd_del6" cmd="$cmd_del7" cmd="$cmd_del8" \
+    cmd="$cmd_del9" cmd="$cmd_del10" cmd="$cmd_del11" cmd="$cmd_del12" \
+    cmd="$cmd_del13" cmd="$cmd_del14" cmd="$cmd_del15" \
     cmd="$cmd_selection" \
     out="${TEMP_DIR}/matched_o1r1234_total.fits"
 
