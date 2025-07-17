@@ -31,7 +31,8 @@ matched_r3="${TEMP_DIR}/mr3_t123.fits" # matched radio catalogue3
 matched_r4="${TEMP_DIR}/mr4_t123.fits"  # matched radio catalogue4
 ############################################################
 # 3. Group the matched catalogues
-echo "Grouping matched catalogues...(1/3)"
+echo "Final step starting"
+echo "Grouping matched catalogues...(1/4)"
 java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
     in1="${matched_r1}" in2="${matched_r2}" in3="${matched_r3}" in4="${matched_r4}" \
     join1="always" join2="always" join3="always" join4="always" \
@@ -99,17 +100,17 @@ java -jar $stilts_dir tpipe \
     cmd="$cmd_del9" cmd="$cmd_del10" cmd="$cmd_del11" cmd="$cmd_del12" \
     cmd="$cmd_del13" cmd="$cmd_del14" cmd="$cmd_del15" \
     cmd="$cmd_selection" \
-    out="${TEMP_DIR}/matched_o1r1234_total.fits"
-
+    out="${TEMP_DIR}/ref_o1r1234_all_sources.fits"
+echo "renaming and selecting columns for the final catalogue...(2/4)"
 # 5. Now make the final catalogue for the matched high-z sources
 # 5.1 Define the columns to keep in the final catalogue
-Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z \
+Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z sdss_zwarning\
                       FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
                       NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
                       GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
                       RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
-echo "renaming and selecting columns for the final catalogue...(2/3)"
+
 # cmds_rename=""
 # for i in "${!columns[@]}"; do
 #     col=${columns[$i]}
@@ -129,8 +130,24 @@ java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/matched_o1r1234_total.fits" \
     cmd="$Cols_final" \
     cmd="$selection_final" \
+    out="${TEMP_DIR}/matched_radio_highz_catalogue.fits"
+echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/matched_radio_highz_catalogue.fits"
+
+
+z_flag_cmd1='addcol -before $5 z_reliable_flag "equals(sdss_source_z, \"VI\") ? 1 : 0"'
+z_flag_cmd2='replacecol z_reliable_flag "z_reliable_flag == 0 && equals(sdss_source_z, \"PIPE\") && sdss_zwarning == 0 ? 2 : z_reliable_flag"'
+z_flag_cmd3='replacecol z_reliable_flag "z_reliable_flag == 0 && equals(sdss_source_z, \"PIPE\") && sdss_zwarning != 0 ? 3 : z_reliable_flag"'
+z_flag_cmd4='replacecol z_reliable_flag "z_reliable_flag == 0 ? 1 : z_reliable_flag"'
+
+# 5.2 Add the z_reliable_flag column to the final catalogue
+java -jar $stilts_dir tpipe ifmt=fits \
+    in="${TEMP_DIR}/matched_radio_highz_catalogue.fits" \
+    cmd="$z_flag_cmd1" \
+    cmd="$z_flag_cmd2" \
+    cmd="$z_flag_cmd3" \
+    cmd="$z_flag_cmd4" \
     out="${TEMP_DIR}/final_matched_highz_catalogue.fits"
-echo "(3/3) Final catalogue created at: ${TEMP_DIR}/final_matched_highz_catalogue.fits"
+echo "(4/4) Finished processing for flagging all redshift tiers as well, output saved to ${TEMP_DIR}/final_matched_highz_catalogue.fits "
 
 exit
 
