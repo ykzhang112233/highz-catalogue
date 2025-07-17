@@ -39,8 +39,13 @@ for i in range(len(sources)):
     a3 = 1 if df.loc[i, 'source_tier_gleam'] == 1 else 0
     k = a0*1 + a1*2 + a2*4 + a3*8
     df.loc[i, 'source_tier_flag'] = k
+# sort the dataframe by sdss_name column
 
-df.to_csv('../final_matched_highz_catalogue.csv', index=False)
 
+df.to_csv('../final_matched_highz_catalogue.csv', index=False,)
+
+df2= pd.read_csv('../final_matched_highz_catalogue.csv')
+df2.sort_values(by='sdss_name', inplace=True)
+df2.to_csv('../final_matched_highz_catalogue_sorted.csv', index=False)
 #Usage example:
 # python make_cat.py
