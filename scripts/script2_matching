@@ -31,39 +31,39 @@ cat_r4="${TEMP_DIR}/tmp_racs.fits"  # radio catalogue4
 ############################################################
 # 3. Conduct the first matching
 ## 3.1 Set the matching radius for different catalogues and join type
-raidus_o1r1=3   # First 5"
-raidus_o1r2=25  # NVSS 45"
-raidus_o1r3=110 # gleam psfmaj <200"
-raidus_o1r4=15  # RACS 25"
+raidus_r1o1=3   # First 5"
+raidus_r2o1=25  # NVSS 45"
+raidus_r3o1=110 # gleam psfmaj <200"
+raidus_r4o1=15  # RACS 25"
 # jointype=1and2  
 
-java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r1}" out=match1_o1r1.fits \
-                               values1="RA DEC" values2="RA_deg DEC_deg" \
-                               matcher=sky params="$raidus_o1r1" \
+java -jar $stilts_dir tmatch2  in1="${cat_r1}" in2="${cat_o1}" out=match1_r1o1.fits \
+                               values1="RA_deg DEC_deg" values2="RA DEC"  \
+                               matcher=sky params="$raidus_r1o1" \
                                join="1and2" find="all" \
-                               fixcols=all suffix1=_o1 suffix2=_r1
-echo "---> Crossmatched O1R1"
+                               fixcols=all suffix1=_r1 suffix2=_o1
+echo "---> Crossmatched R1O1"
 
-java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r2}" out=match1_o1r2.fits \
-                               values1="RA DEC" values2="RA_deg DEC_deg" \
-                               matcher=sky params="$raidus_o1r2" \
+java -jar $stilts_dir tmatch2 in1="${cat_r2}" in2="${cat_o1}" out=match1_r2o1.fits \
+                               values1="RA_deg DEC_deg" values2="RA DEC" \
+                               matcher=sky params="$raidus_r2o1" \
                                join="1and2" find="all" \
-                               fixcols=all suffix1=_o1 suffix2=_r2
-echo "---> Crossmatched O1R2"
+                               fixcols=all suffix1=_r2 suffix2=_o1
+echo "---> Crossmatched R2O1"
 
-java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r3}" out=match1_o1r3.fits \
-                               values1="RA DEC" values2="RA_deg DEC_deg" \
-                               matcher=sky params="$raidus_o1r3" \
+java -jar $stilts_dir tmatch2 in1="${cat_r3}" in2="${cat_o1}" out=match1_r3o1.fits \
+                               values1="RA_deg DEC_deg" values2="RA DEC"  \
+                               matcher=sky params="$raidus_r3o1" \
                                join="1and2" find="all" \
-                               fixcols=all suffix1=_o1 suffix2=_r3
-echo "---> Crossmatched O1R3"
+                               fixcols=all suffix1=_r3 suffix2=_o1
+echo "---> Crossmatched R3O1"
 
-java -jar $stilts_dir tmatch2 "${cat_o1}" "${cat_r4}" out=match1_o1r4.fits \
-                               values1="RA DEC" values2="RA_deg DEC_deg" \
-                               matcher=sky params="$raidus_o1r4" \
+java -jar $stilts_dir tmatch2 in1="${cat_r4}" in2="${cat_o1}" out=match1_r4o1.fits \
+                               values1="RA_deg DEC_deg" values2="RA DEC"  \
+                               matcher=sky params="$raidus_r4o1" \
                                join="1and2" find="all" \
-                               fixcols=all suffix1=_o1 suffix2=_r4
-echo "---> Crossmatched O1R4"
+                               fixcols=all suffix1=_r4 suffix2=_o1
+echo "---> Crossmatched R4O1"
 
 
 
