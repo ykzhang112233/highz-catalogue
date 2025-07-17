@@ -33,7 +33,7 @@ cat_r4="${TEMP_DIR}/tmp_racs.fits"  # radio catalogue4
 ## 3.1 Set the matching radius for different catalogues and join type
 raidus_o1r1=3   # First 5"
 raidus_o1r2=25  # NVSS 45"
-raidus_o1r3=100 # gleam psfmaj <200"
+raidus_o1r3=110 # gleam psfmaj <200"
 raidus_o1r4=15  # RACS 25"
 # jointype=1and2  
 
