@@ -127,7 +127,7 @@ selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
                         (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
                         (!NULL_source_tier_racs && source_tier_racs > 0)"'
 java -jar $stilts_dir tpipe \
-    in="${TEMP_DIR}/matched_o1r1234_total.fits" \
+    in="${TEMP_DIR}/ref_o1r1234_all_sources.fits" \
     cmd="$Cols_final" \
     cmd="$selection_final" \
     out="${TEMP_DIR}/matched_radio_highz_catalogue.fits"
