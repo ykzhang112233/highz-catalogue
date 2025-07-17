@@ -26,18 +26,19 @@ new_columns = [
 ]
 df.rename(columns={old: new for old, new in zip(columns, new_columns)}, inplace=True)
 df.replace([-32768,-2147483648], 'NA', inplace=True)
-
+# make the sdss_z column all with float 3 digits
+df['sdss_z'] = df['sdss_z'].astype(float).round(3)
 sources = df['sdss_name']
 # Add a new column for source_tier_flag as a binary flag
 # make the empty pd.sereries based on all source numbers
 df['source_tier_flag'] = pd.Series(dtype='int')
 for i in range(len(sources)):
-    # extract the non-nan values from the source_tier columns
-    a0 = 1 if not pd.isna(df['source_tier_first'][i]) else 0
-    a1 = 1 if not pd.isna(df['source_tier_racs'][i]) else 0
-    a2 = 1 if not df.loc[i, 'source_tier_nvss'] == 1 else 0
-    a3 = 1 if not df.loc[i, 'source_tier_gleam'] == 1 else 0
-    df.loc[i, 'source_tier_flag'] = a0*1 + a1*2 + a2*4 + a3*8
+    a0 = 1 if df.loc[i, 'source_tier_first'] == 1 else 0
+    a1 = 1 if df.loc[i, 'source_tier_racs'] == 1 else 0
+    a2 = 1 if df.loc[i, 'source_tier_nvss'] == 1 else 0
+    a3 = 1 if df.loc[i, 'source_tier_gleam'] == 1 else 0
+    k = a0*1 + a1*2 + a2*4 + a3*8
+    df.loc[i, 'source_tier_flag'] = k
 
 df.to_csv('../final_matched_highz_catalogue.csv', index=False)
 
