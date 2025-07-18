@@ -111,15 +111,6 @@ Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z sdss_zwarn
                       RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
 
-# cmds_rename=""
-# for i in "${!columns[@]}"; do
-#     col=${columns[$i]}
-#     new_col=${new_columns[$i]}
-#     cmds_rename+='colmeta -name "'${new_col}'" "'${col}'"'
-#     # echo "Doing rename useing colmeta -name \"${new_col}\" \"${col}\""
-#     # cmds_rename+="addcol -before $1 ${new_col} \"!NULL_${col} ? ${col} : NULL\" "
-# done
-# echo "cmds_rename: $cmds_rename"
 
 # selection_final='select "sdss_z >=3"'
 selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
@@ -128,7 +119,6 @@ selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
                         (!NULL_source_tier_racs && source_tier_racs > 0)"'
 java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/ref_o1r1234_all_sources.fits" \
-    cmd="$Cols_final" \
     cmd="$selection_final" \
     out="${TEMP_DIR}/matched_radio_highz_catalogue.fits"
 echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/matched_radio_highz_catalogue.fits"
@@ -146,6 +136,7 @@ java -jar $stilts_dir tpipe ifmt=fits \
     cmd="$z_flag_cmd2" \
     cmd="$z_flag_cmd3" \
     cmd="$z_flag_cmd4" \
+    cmd="$Cols_final" \
     out="${TEMP_DIR}/final_matched_highz_catalogue.fits"
 echo "(4/4) Finished processing for flagging all redshift tiers as well, output saved to ${TEMP_DIR}/final_matched_highz_catalogue.fits "
 
