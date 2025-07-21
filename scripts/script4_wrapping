@@ -23,7 +23,7 @@ stilts_dir="${BASEDIR}/stilts.jar"
 ############################################################
 ##### 2. Define input paths from the previous output #####
 # The names are based on the previous script outputs
-cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
+cat_o1="${TEMP_DIR}/tmp_sdss16_qg.fits"  #optical catalogue1
 cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
 matched_r1="${TEMP_DIR}/mr1_t123.fits" # matched radio catalogue1
 matched_r2="${TEMP_DIR}/mr2_t123.fits"  # matched radio catalogue2
@@ -47,8 +47,8 @@ java -jar $stilts_dir tmatchn multimode=group nin=4 matcher=exact \
 
 generate_stilts_cmds() {
     # 倒序列名（先手动写好）
-    cols=(ZWARN_PCA Z_PCA Z_CONF_10K Z_10K Z_QN IS_QSO_QN Z_CONF Z_VI ZWARNING Z_PIPE SOURCE_Z Z DEC RA SDSS_NAME)
-    new_columns=(sdss_zwarn_pca sdss_z_pca sdss_z_conf_10k sdss_z_10k sdss_z_qn sdss_is_qso_qn sdss_z_conf sdss_z_vi sdss_zwarning sdss_z_pipe sdss_source_z sdss_z sdss_dec sdss_ra sdss_name)
+    cols=(ZWARN_PCA Z_PCA Z_CONF_10K Z_10K Z_QN IS_QSO_QN Z_CONF Z_VI ZWARNING Z_PIPE SOURCE_Z Z class DEC RA SDSS_NAME)
+    new_columns=(sdss_zwarn_pca sdss_z_pca sdss_z_conf_10k sdss_z_10k sdss_z_qn sdss_is_qso_qn sdss_z_conf sdss_z_vi sdss_zwarning sdss_z_pipe sdss_source_z sdss_z sdss_class sdss_dec sdss_ra sdss_name)
     index=0  # 从 cmd_comb1 开始
     for col in "${cols[@]}"; do
         # 构造替代表达式
@@ -94,17 +94,17 @@ java -jar $stilts_dir tpipe \
     cmd="$cmd_cmob1" cmd="$cmd_cmob2" cmd="$cmd_cmob3" cmd="$cmd_cmob4" \
     cmd="$cmd_comb5" cmd="$cmd_comb6" cmd="$cmd_comb7" cmd="$cmd_comb8" \
     cmd="$cmd_comb9" cmd="$cmd_comb10" cmd="$cmd_comb11" cmd="$cmd_comb12" \
-    cmd="$cmd_comb13" cmd="$cmd_comb14" cmd="$cmd_comb15" \
+    cmd="$cmd_comb13" cmd="$cmd_comb14" cmd="$cmd_comb15" cmd="$cmd_comb16"  \
     cmd="$cmd_del1" cmd="$cmd_del2" cmd="$cmd_del3" cmd="$cmd_del4" \
     cmd="$cmd_del5" cmd="$cmd_del6" cmd="$cmd_del7" cmd="$cmd_del8" \
     cmd="$cmd_del9" cmd="$cmd_del10" cmd="$cmd_del11" cmd="$cmd_del12" \
-    cmd="$cmd_del13" cmd="$cmd_del14" cmd="$cmd_del15" \
+    cmd="$cmd_del13" cmd="$cmd_del14" cmd="$cmd_del15" cmd="$cmd_del16" \
     cmd="$cmd_selection" \
     out="${TEMP_DIR}/ref_o1r1234_all_sources.fits"
 echo "renaming and selecting columns for the final catalogue...(2/4)"
 # 5. Now make the final catalogue for the matched high-z sources
 # 5.1 Define the columns to keep in the final catalogue
-Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z sdss_zwarning\
+Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_class sdss_z sdss_source_z sdss_zwarning z_reliable_flag\
                       FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
                       NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
                       GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \

@@ -22,7 +22,7 @@ stilts_dir="${BASEDIR}/stilts.jar"
 
 ############################################################
 ##### 2. Define input paths from the previous output #####
-cat_o1="${TEMP_DIR}/tmp_sdss.fits"  #optical catalogue1
+cat_o1="${TEMP_DIR}/tmp_sdss16_qg.fits"  #optical catalogue1
 cat_sdss_hz="${TEMP_DIR}/tmp_sdssz3.fits"
 cat_r1="${TEMP_DIR}/tmp_first.fits" # radio catalogue1
 cat_r2="${TEMP_DIR}/tmp_nvss.fits"  # radio catalogue2
