@@ -62,7 +62,7 @@ java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
 #                              cmd="$cols_dr16g" \
 #                              out=tmp_sdss16g.fits
 
-# Concatenate the two sdss catalogues
+# Concatenate the two sdss catalogues (the dr16q and the dr16 galaxy catalogue)
 # I did this in python this time. Which is easier (it is also easy in topcat).
 # you can comment that and run the python script along to release the memory burden
 # python concat_cat.py
