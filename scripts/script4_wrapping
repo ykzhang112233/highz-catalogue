@@ -103,13 +103,7 @@ java -jar $stilts_dir tpipe \
     out="${TEMP_DIR}/ref_o1r1234_all_sources.fits"
 echo "renaming and selecting columns for the final catalogue...(2/4)"
 # 5. Now make the final catalogue for the matched high-z sources
-# 5.1 Define the columns to keep in the final catalogue
-Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_class sdss_z sdss_source_z sdss_zwarning z_reliable_flag\
-                      FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
-                      NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
-                      GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
-                      RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
-
+# 5.1 Define the columns to keep in the matched and the final catalogue
 
 
 # selection_final='select "sdss_z >=3"'
@@ -124,12 +118,24 @@ java -jar $stilts_dir tpipe \
     out="${TEMP_DIR}/matched_radio_highz_catalogue.fits"
 echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/matched_radio_highz_catalogue.fits"
 
+# the cols to keep in the final catalogue
+Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z z_reliable_flag\
+                      FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
+                      NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
+                      GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
+                      RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
+
 selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
                         (!NULL_source_tier_nvss && source_tier_nvss > 0) ||
                         (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
                         (!NULL_source_tier_racs && source_tier_racs > 0)"'
 
 # add the z_reliable_flag column to the final catalogue, demostrating the reliability of the redshift
+# If the sdss_source_z is from VI, then z_reliable_flag = 1
+# If the sdss_source_z is from PIPE and zwarning = 0, then z_reliable_flag = 2
+# If the sdss_source_z is from PIPE and zwarning != 0, then z_reliable_flag = 3
+# If the sdss_source_z is not from PIPE or VI, then z_reliable_flag = 1 (composite for the rest which are similar to VI)
+
 z_flag_cmd1='addcol -before $5 z_reliable_flag "equals(sdss_source_z, \"VI\") ? 1 : 0"'
 z_flag_cmd2='replacecol z_reliable_flag "z_reliable_flag == 0 && equals(sdss_source_z, \"PIPE\") && sdss_zwarning == 0 ? 2 : z_reliable_flag"'
 z_flag_cmd3='replacecol z_reliable_flag "z_reliable_flag == 0 && equals(sdss_source_z, \"PIPE\") && sdss_zwarning != 0 ? 3 : z_reliable_flag"'
