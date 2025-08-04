@@ -37,8 +37,8 @@ matched_r4="${TEMP_DIR}/match1_r4o1.fits"  # matched radio catalogue4
 # raidus_o1r4=15  # RACS 25"
 # 1. Filter by distance
 radio_cats=("${matched_r1}" "${matched_r2}" "${matched_r3}" "${matched_r4}")
-size_a1=("Maj_r1","MajAxis_r2","awide_r3","amaj0_r4")
-size_a2=("Maj_r1","MajAxis_r2","psfawide_r3","amaj_r4")
+size_a1=("Maj_r1" "MajAxis_r2" "awide_r3" "amaj0_r4")
+size_a2=("Maj_r1" "MajAxis_r2" "psfawide_r3" "amaj_r4")
 for i in "${!radio_cats[@]}"; do
     num=$(($i + 1))
     radio_cat=${radio_cats[$i]}
@@ -48,15 +48,15 @@ for i in "${!radio_cats[@]}"; do
     out_file="mr${num}_t123.fits"
 
     echo "Processing ${radio_cat} with size ${size_a1[$i]} and ${size_a2[$i]}"
-    if i = 0; then
-        selection1="select \"(${size_a1} == 0) || (${size_a1} !=0 && Separation <= ${size_a1}/2) \""
-    elif i = 1; then
-        selection1="select \" Separation <= ${size_a1}/2 \""
-    elif i = 2; then
+    if [ $i -eq 0 ]; then
+        selection1="select \"(${size_a1[$i]} == 0) || (${size_a1[$i]} !=0 && Separation <= ${size_a1[$i]}/2) \""
+    elif [ $i -eq 1 ]; then
+        selection1="select \" Separation <= ${size_a1[$i]}/2 \""
+    elif [ $i -eq 2 ]; then
         # choose the minor one between size_a1 and size_a2
-        selection1="select \"Separation <= min(${size_a1}, ${size_a2})/2\""
-    elif i = 3; then
-        selection1="select \"(!NULL_size_a1 && Separation <= ${size_a1}/2) || (NULL_size_a1 && Separation <= ${size_a2}/2) \""
+        selection1="select \"Separation <= min(${size_a1[$i]}, ${size_a2[$i]})/2\""
+    elif [ $i -eq 3 ]; then
+        selection1="select \"(!NULL_${size_a1[$i]} && Separation <= ${size_a1[$i]}/2) || (NULL_${size_a1[$i]} && Separation <= ${size_a2[$i]}/2) \""
     else
         echo "Error: Invalid index $i for radio_cat array."
         exit 1
