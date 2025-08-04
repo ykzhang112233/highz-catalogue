@@ -114,15 +114,20 @@ Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_class sdss_z sdss_source_z
 
 # selection_final='select "sdss_z >=3"'
 # the replaced selection_final will select the sources with at least one tier of radio source rather than only sdss_z >= 3
-selection_final='select "(!NULL_source_tier_first && source_tier_first > -2) ||
+selection_matched='select "(!NULL_source_tier_first && source_tier_first > -2) ||
                         (!NULL_source_tier_nvss && source_tier_nvss > -2) ||
                         (!NULL_source_tier_gleam && source_tier_gleam > -2) ||
                         (!NULL_source_tier_racs && source_tier_racs > -2)"'
 java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/ref_o1r1234_all_sources.fits" \
-    cmd="$selection_final" \
+    cmd="$selection_matched" \
     out="${TEMP_DIR}/matched_radio_highz_catalogue.fits"
 echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/matched_radio_highz_catalogue.fits"
+
+selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
+                        (!NULL_source_tier_nvss && source_tier_nvss > 0) ||
+                        (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
+                        (!NULL_source_tier_racs && source_tier_racs > 0)"'
 
 # add the z_reliable_flag column to the final catalogue, demostrating the reliability of the redshift
 z_flag_cmd1='addcol -before $5 z_reliable_flag "equals(sdss_source_z, \"VI\") ? 1 : 0"'
@@ -133,6 +138,7 @@ z_flag_cmd4='replacecol z_reliable_flag "z_reliable_flag == 0 ? 1 : z_reliable_f
 # 5.2 Add the z_reliable_flag column to the final catalogue
 java -jar $stilts_dir tpipe ifmt=fits \
     in="${TEMP_DIR}/matched_radio_highz_catalogue.fits" \
+    cmd="$selection_final" \
     cmd="$z_flag_cmd1" \
     cmd="$z_flag_cmd2" \
     cmd="$z_flag_cmd3" \

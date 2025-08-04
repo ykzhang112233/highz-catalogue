@@ -111,8 +111,8 @@ for i in "${!radio_cats[@]}"; do
 
     java -jar $stilts_dir tpipe \
         in="group_zcheck_r${num}.fits" \
-        cmd='select "!NULL_GroupID && GroupSize > 1 && group_z_max > 3"' \
-        cmd='keepcols "GroupID group_z_min"' \
+        cmd='select "!NULL_GroupID && GroupSize > 1"' \
+        cmd='keepcols "GroupID group_z_min group_z_max"' \
         out="group_hz_sources_r${num}.fits"
     nrows=$(java -jar $stilts_dir tpipe in="group_hz_sources_r${num}.fits" omode='count' | grep 'rows:' | awk '{print $4}')
 
@@ -154,6 +154,8 @@ for i in "${!radio_cats[@]}"; do
         cmd="$flag_cmd1" \
         cmd="$flag_cmd2" \
         cmd="$flag_cmd3" \
+        cmd="$flag_cmd4" \
+        cmd="$flag_cmd5" \
         out="${out_file}"
     echo "Finished processing ${radio_cat} for flagging all three tiers, output saved to ${out_file} (5/5)"
     echo "==========================================================="
