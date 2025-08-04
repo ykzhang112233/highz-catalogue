@@ -142,10 +142,10 @@ for i in "${!radio_cats[@]}"; do
     fi
     
     # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with one highz)
-    # use 2.85 give a tolerance for the group_z_min, so that we can include the sources within an error of 5% (0.15) in tier2 and tier3
+    # use 2.97 give a tolerance for the group_z_min, so that we can include the sources within an error of 1% (0.03) in tier2 and tier3
     flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : -1"'
-    flag_cmd2='replacecol source_tier "source_tier == -1 && !NULL_group_z_min && group_z_min >= 2.85 ? 2 : source_tier"'
-    flag_cmd3='replacecol source_tier "source_tier == -1 && !NULL_group_z_min && group_z_min < 2.85 && Z_o1>=3 ? 3 : source_tier"'
+    flag_cmd2='replacecol source_tier "source_tier == -1 && !NULL_group_z_min && group_z_min >= 2.97 ? 2 : source_tier"'
+    flag_cmd3='replacecol source_tier "source_tier == -1 && !NULL_group_z_min && group_z_min < 2.97 && Z_o1>=3 ? 3 : source_tier"'
     # flag_cmd2='replacecol source_tier "source_tier == -1 &&  "
     ## Note here: finally there will the following tiers : 1,2,3,-1,-999. 
     ##            besides 1,2,3. -1 means radio source matched sdss source within the beam. -999 means no match at all.
