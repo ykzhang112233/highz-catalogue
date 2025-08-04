@@ -119,7 +119,7 @@ java -jar $stilts_dir tpipe \
 echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/matched_radio_highz_catalogue.fits"
 
 # the cols to keep in the final catalogue
-Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z z_reliable_flag\
+Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z sdss_zwarning z_reliable_flag\
                       FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
                       NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
                       GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
