@@ -69,13 +69,13 @@ java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
 dr16_comb="tmp_sdss16_comb.fits"
 dr16_comb_out="tmp_sdss16_qg.fits"
 
-cols_dr16='keepcols "SDSS_NAME RA DEC class Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF \
+cols_dr16='keepcols "SDSS_NAME RA DEC CLASS Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF \
                       IS_QSO_QN Z_QN Z_10K Z_CONF_10K Z_PCA ZWARN_PCA"'
 java -jar  $stilts_dir tpipe ifmt=fits "$dr16_comb" \
                              cmd="$cols_dr16" \
                              out="$dr16_comb_out"
 
-### 3.3 make the highz catalogue of dr16q for further usage
+### 3.3 make the dr16q high-z catalog for further usage
 java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
                             cmd="$Cols_SDSSdr16q" \
                             cmd='select "z > 3"' \
