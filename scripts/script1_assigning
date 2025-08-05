@@ -65,8 +65,14 @@ java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
 # Concatenate the two sdss catalogues (the dr16q and the dr16 galaxy catalogue)
 # I did this in python this time. Which is easier (it is also easy in topcat).
 # you can comment that and run the python script along to release the memory burden
-# python concat_cat.py
 dr16_comb="tmp_sdss16_comb.fits"
+if not [ -f "$dr16_comb" ]; then
+    echo "Concatenating the two sdss catalogues (the dr16q and the dr16 galaxy catalogue) to make the combined sdss16 catalogue..."
+    python concat_cat.py
+else
+    echo "$dr16_comb exists, so skipping the concatenation step, but make sure it is the correct one"
+fi
+
 dr16_comb_out="tmp_sdss16_qg.fits"
 
 cols_dr16='keepcols "SDSS_NAME RA DEC CLASS Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF \
