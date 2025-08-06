@@ -152,13 +152,14 @@ for i in "${!radio_cats[@]}"; do
         echo "Filtered ${fits_temp} to include only groups with z>3 sources.(4/5)"
     fi
     
-    # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with one highz)
+    # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with at least one highz)
     # use 2.97 give a tolerance for the group_z_min, so that we can include the sources within an error of 1% (0.03) in tier2 and tier3
     flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : -2"'
     flag_cmd2='replacecol source_tier "source_tier == -2 && !NULL_group_z_min && group_z_min >= 2.97 ? 2 : source_tier"'
-    flag_cmd3='replacecol source_tier "source_tier == -2 && !NULL_group_z_min && group_z_min <  2.97 && Z_o1>=3 ? 3 : source_tier"'
-    flag_cmd4='replacecol source_tier "source_tier == -2 && !NULL_group_z_max && group_z_max >= 3 ? -1 : source_tier"'
-    flag_cmd5='replacecol source_tier "source_tier == -2 ? -999 : source_tier"'
+    flag_cmd3='replacecol source_tier "source_tier == -2 && !NULL_group_z_min && group_z_min <  2.97 && Z_o1>= 3 ? 3 : source_tier"'
+    flag_cmd4='replacecol source_tier "source_tier == -2 && !NULL_group_z_max && group_z_max >= 3 && Z_o1 >=2.97 ? 3 : source_tier"'
+    flag_cmd5='replacecol source_tier "source_tier == -2 && !NULL_group_z_max && group_z_max < 3 ? -1 : source_tier"'
+    flag_cmd6='replacecol source_tier "source_tier == -2 ? -999 : source_tier"'
     ## Note here: finally there will the following tiers : 1,2,3,-1,-999. 
     ##            besides 1,2,3. -1 means radio source matched sdss source within the beam. -999 means no match at all.
     java -jar $stilts_dir tpipe ifmt=fits in="groups_${fits_temp}" \
@@ -167,6 +168,7 @@ for i in "${!radio_cats[@]}"; do
         cmd="$flag_cmd3" \
         cmd="$flag_cmd4" \
         cmd="$flag_cmd5" \
+        cmd="$flag_cmd6" \
         out="${out_file}"
     echo "Finished processing ${radio_cat} for flagging all three tiers, output saved to ${out_file} (5/5)"
     echo "==========================================================="
