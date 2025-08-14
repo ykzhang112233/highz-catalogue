@@ -29,16 +29,16 @@ df.replace([-32768,-2147483648], 'NA', inplace=True)
 # make the sdss_z column all with float 3 digits
 df['sdss_z'] = df['sdss_z'].astype(float).round(3)
 sources = df['sdss_name']
-# Add a new column for source_tier_flag as a binary flag
+# Add a new column for match_tier_flag as a binary flag
 # make the empty pd.sereries based on all source numbers
-df['source_tier_flag'] = pd.Series(dtype='int')
+df['match_tier_flag'] = pd.Series(dtype='int')
 for i in range(len(sources)):
-    a0 = 1 if df.loc[i, 'source_tier_first'] == 1 else 0
-    a1 = 1 if df.loc[i, 'source_tier_racs'] == 1 else 0
-    a2 = 1 if df.loc[i, 'source_tier_nvss'] == 1 else 0
-    a3 = 1 if df.loc[i, 'source_tier_gleam'] == 1 else 0
+    a0 = 1 if df.loc[i, 'match_tier_first'] == 1 else 0
+    a1 = 1 if df.loc[i, 'match_tier_racs'] == 1 else 0
+    a2 = 1 if df.loc[i, 'match_tier_nvss'] == 1 else 0
+    a3 = 1 if df.loc[i, 'match_tier_gleam'] == 1 else 0
     k = a0*1 + a1*2 + a2*4 + a3*8
-    df.loc[i, 'source_tier_flag'] = k
+    df.loc[i, 'match_tier_flag'] = k
 # sort the dataframe by sdss_name column
 
 
