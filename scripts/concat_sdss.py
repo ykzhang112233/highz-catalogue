@@ -66,12 +66,12 @@ new_df_galaxy_2 = pd.DataFrame(
         'RA': df_update['RA_ICRS'],
         'DEC': df_update['DE_ICRS'],
         'CLASS': 'GALAXY',
-        'Z': df_update['Z'],
+        'Z': np.where(df_update['Z'] < 3, df_update['Z'], 0.001),
         'ZWARNING': df_update['f_zsp'],
         'SOURCE_Z': df_update['SOURCE_Z'].astype(str)
     }
 )
-
+# the above critera for z is to discard unreliable redshifts from photometry or large z_warnings
 
 with fits.open(dr16q_short) as hdul:
     data = hdul[1].data  
