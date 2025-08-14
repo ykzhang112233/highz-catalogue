@@ -68,7 +68,7 @@ java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
 dr16_comb="tmp_sdss16_comb.fits"
 if not [ -f "$dr16_comb" ]; then
     echo "Concatenating the two sdss catalogues (the dr16q and the dr16 galaxy catalogue) to make the combined sdss16 catalogue..."
-    python concat_cat.py
+    python concat_sdss.py
 else
     echo "$dr16_comb exists, so skipping the concatenation step, but make sure it is the correct one"
 fi
