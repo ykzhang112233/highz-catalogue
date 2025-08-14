@@ -48,7 +48,7 @@ echo "SDSSdr16q: $SDSSdr16q"
 ## 3. compress the sdss catalogue ##########################
 Cols_SDSSdr16q='keepcols "SDSS_NAME RA DEC Z SOURCE_Z Z_PIPE ZWARNING Z_VI Z_CONF \
                           IS_QSO_QN Z_QN Z_10K Z_CONF_10K Z_PCA ZWARN_PCA"'
-qso_cols='addcol class "\"QSO\""'
+# qso_cols='addcol class "\"QSO\""'
 ### 3.1 reduce the columns for sdssdr16q
 #Make the new sdss16cat by concatenating the sr16q and galaxies from sdss16
 java -jar $stilts_dir tpipe ifmt=fits "$SDSSdr16q" \
