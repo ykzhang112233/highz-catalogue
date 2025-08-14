@@ -44,8 +44,8 @@ for i in range(len(sources)):
 
 df.to_csv('../final_matched_highz_catalogue.csv', index=False,)
 
-df2= pd.read_csv('../final_matched_highz_catalogue.csv')
+# df2= pd.read_csv('../final_matched_highz_catalogue.csv')
 df2.sort_values(by='sdss_ra', inplace=True)
-df2.to_csv('../final_matched_highz_catalogue_sorted.csv', index=False)
+df2.to_csv('../final_matched_highz_catalogue.csv', index=False)
 #Usage example:
 # python make_cat.py
