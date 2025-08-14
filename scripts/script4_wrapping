@@ -87,7 +87,7 @@ generate_stilts_cmds() {
 # generate the commands for combining and deleting columns
 eval "$(generate_stilts_cmds)"
 # select the raws based on the non-null values of their tiers to make a big catalog with all radio sources
-cmd_selection='select "!NULL_source_tier_first || !NULL_source_tier_nvss || !NULL_source_tier_gleam || !NULL_source_tier_racs"'
+cmd_selection='select "!NULL_match_tier_first || !NULL_match_tier_nvss || !NULL_match_tier_gleam || !NULL_match_tier_racs"'
 # 4.2 the main tpipe run for this
 java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/match1_o1r1234.fits" \
@@ -108,10 +108,10 @@ echo "renaming and selecting columns for the final catalogue...(2/4)"
 
 # selection_final='select "sdss_z >=3"'
 # the replaced selection_final will select the sources with at least one tier of radio source rather than only sdss_z >= 3
-selection_matched='select "(!NULL_source_tier_first && source_tier_first > -2) ||
-                        (!NULL_source_tier_nvss && source_tier_nvss > -2) ||
-                        (!NULL_source_tier_gleam && source_tier_gleam > -2) ||
-                        (!NULL_source_tier_racs && source_tier_racs > -2)"'
+selection_matched='select "(!NULL_match_tier_first && match_tier_first > -2) ||
+                        (!NULL_match_tier_nvss && match_tier_nvss > -2) ||
+                        (!NULL_match_tier_gleam && match_tier_gleam > -2) ||
+                        (!NULL_match_tier_racs && match_tier_racs > -2)"'
 java -jar $stilts_dir tpipe \
     in="${TEMP_DIR}/ref_o1r1234_all_sources.fits" \
     cmd="$selection_matched" \
@@ -120,15 +120,15 @@ echo "(3/4) just before final catalogue, radio version created at: ${TEMP_DIR}/m
 
 # the cols to keep in the final catalogue
 Cols_final='keepcols "sdss_name sdss_ra sdss_dec sdss_z sdss_source_z sdss_zwarning z_reliable_flag\
-                      FIRST_r1 source_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
-                      NVSS_r2 source_tier_nvss S1.4_r2 e_S1.4_r2 \
-                      GLEAM_r3 source_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
-                      RACS-DR1_r4 source_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
+                      FIRST_r1 match_tier_first Fpeak_r1 Fint_r1 Rms_r1 \
+                      NVSS_r2 match_tier_nvss S1.4_r2 e_S1.4_r2 \
+                      GLEAM_r3 match_tier_gleam Fpwide_r3 e_Fpwide_r3 Fintwide_r3 e_Fintwide_r3 \
+                      RACS-DR1_r4 match_tier_racs Fpk_r4 e_Fpk_r4 Ftot_r4 e_Ftot_r4"'
 
-selection_final='select "(!NULL_source_tier_first && source_tier_first > 0) ||
-                        (!NULL_source_tier_nvss && source_tier_nvss > 0) ||
-                        (!NULL_source_tier_gleam && source_tier_gleam > 0) ||
-                        (!NULL_source_tier_racs && source_tier_racs > 0)"'
+selection_final='select "(!NULL_match_tier_first && match_tier_first > 0) ||
+                        (!NULL_match_tier_nvss && match_tier_nvss > 0) ||
+                        (!NULL_match_tier_gleam && match_tier_gleam > 0) ||
+                        (!NULL_match_tier_racs && match_tier_racs > 0)"'
 
 # add the z_reliable_flag column to the final catalogue, demostrating the reliability of the redshift
 # If the sdss_source_z is from VI, then z_reliable_flag = 1

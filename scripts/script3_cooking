@@ -153,15 +153,14 @@ for i in "${!radio_cats[@]}"; do
     fi
     
     # 5. Adding Flag cols for the three tier sources: 1(single highz), 2(group all highz), 3(group with at least one highz)
-    # use 2.97 give a tolerance for the group_z_min, so that we can include the sources within an error of 1% (0.03) in tier2 and tier3
-    flag_cmd1='addcol source_tier "GroupSize==1 && Z_o1>=3 ? 1 : -2"'
-    flag_cmd2='replacecol source_tier "source_tier == -2 && !NULL_group_z_min && group_z_min >= 2.97 ? 2 : source_tier"'
-    flag_cmd3='replacecol source_tier "source_tier == -2 && !NULL_group_z_min && group_z_min <  2.97 && Z_o1>= 3 ? 3 : source_tier"'
-    flag_cmd4='replacecol source_tier "source_tier == -2 && !NULL_group_z_max && group_z_max >= 3 && Z_o1 >=2.97 ? 3 : source_tier"'
-    flag_cmd5='replacecol source_tier "source_tier == -2 && !NULL_group_z_max && group_z_max < 3 ? -1 : source_tier"'
-    flag_cmd6='replacecol source_tier "source_tier == -2 ? -999 : source_tier"'
-    ## Note here: finally there will the following tiers : 1,2,3,-1,-999. 
-    ##            besides 1,2,3. -1 means radio source matched sdss source within the beam. -999 means only matched low-z sources.
+    flag_cmd1='addcol match_tier "GroupSize==1 && Z_o1>=3 ? 1 : -2"'
+    flag_cmd2='replacecol match_tier "match_tier == -2 && !NULL_group_z_min && group_z_min >= 3 ? 2 : match_tier"'
+    flag_cmd3='replacecol match_tier "match_tier == -2 && !NULL_group_z_min && group_z_min <  3 && Z_o1 >= 3 ? 3 : match_tier"'
+    flag_cmd4='replacecol match_tier "match_tier == -2 && !NULL_group_z_max && group_z_max >= 3 && Z_o1 < 3 ? -1 : match_tier"'
+    flag_cmd5='replacecol match_tier "match_tier == -2 && !NULL_group_z_max && group_z_max < 3 ? -999 : match_tier"'
+    flag_cmd6='replacecol match_tier "match_tier == -2 ? -1000 : match_tier"'
+    ## Note here: finally there will the following tiers : 1,2,3,-1,-999, -1000. 
+    ##  Besides 1,2,3. -1 means cp radio source at low-z. -999 means only matched low-z sources, -1000 just used to avoid NaN.
     java -jar $stilts_dir tpipe ifmt=fits in="groups_${fits_temp}" \
         cmd="$flag_cmd1" \
         cmd="$flag_cmd2" \
