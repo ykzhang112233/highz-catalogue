@@ -43,6 +43,7 @@ with fits.open(sdss_galaxy_sup) as hdul:
     table_g2 = Table(data)  
 df_galaxy_sup = table_g2.to_pandas()
 # df_update = df_galaxy_sup[df_galaxy_sup['f_zsp'] != 0]
+# select only the galaxies with clean selection and without good zsp
 df_update = df_galaxy_sup[(df_galaxy_sup['f_zsp'] != 0) & (df_galaxy_sup['clean'] == True)]
 df_update = df_update.reset_index(drop=True)
 df_update['sdss_name'] = df_update['SDSS16'].str.replace('SDSS J', 'g')
